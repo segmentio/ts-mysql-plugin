@@ -30,7 +30,6 @@ Navigate to `example-project/src/index.ts` and you should see errors in the `inv
 
 ### High Priority
 
-- [ ] Make demo gif faster.
 - [ ] Existing schema errors do not display on startup.
 - [ ] Ignore `Create` table table/column errors from schema
 - [ ] E2E tests
