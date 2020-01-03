@@ -1,6 +1,6 @@
 interface Span {
-  start: number
-  end: number
+  readonly start: number
+  readonly end: number
 }
 
 export default function getSubstitutions(contents: string, locations: ReadonlyArray<Span>) {

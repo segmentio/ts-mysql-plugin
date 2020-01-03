@@ -12,11 +12,11 @@ type TypescriptType = typeof Typescript
 class MySqlPlugin {
   private readonly typescript: TypescriptType
 
-  constructor(typescript: TypescriptType) {
+  public constructor(typescript: TypescriptType) {
     this.typescript = typescript
   }
 
-  create({ languageService, project, config }: Typescript.server.PluginCreateInfo): Typescript.LanguageService {
+  public create({ languageService, project, config }: Typescript.server.PluginCreateInfo): Typescript.LanguageService {
     const templateSettings: TemplateSettings = {
       tags: ['sql', 'SQL'],
       enableForStringWithSubstitutions: true,

@@ -1,9 +1,9 @@
 import { DEFAULT_WORD_REGEXP } from './word-regexp'
 
 interface WordWithRange {
-  word: string
-  startOffset: number
-  endOffset: number
+  readonly word: string
+  readonly startOffset: number
+  readonly endOffset: number
 }
 
 export default function(offset: number, text: string): WordWithRange | null {

@@ -2,7 +2,7 @@
 
 A typescript language service plugin that gives superpowers to SQL tagged template literals. Specifically aimed at the MySQL syntax.
 
-![Alt Text](https://github.com/segmentio/ts-mysql-plugin/raw/master/.github/demo.gif)
+![Alt Text](https://cldup.com/RRb5F9EaGy.mov)
 
 ## Features
 

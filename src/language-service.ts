@@ -81,7 +81,7 @@ export default class MySqlLanguageService implements TemplateLanguageService {
     }
   }
 
-  getQuickInfoAtPosition(context: TemplateContext, position: LineAndCharacter): QuickInfo | undefined {
+  public getQuickInfoAtPosition(context: TemplateContext, position: LineAndCharacter): QuickInfo | undefined {
     this.logger.log('getQuickInfoAtPosition: ' + context.text)
 
     const offset = context.toOffset(position)
@@ -151,7 +151,7 @@ export default class MySqlLanguageService implements TemplateLanguageService {
     }
   }
 
-  getCompletionsAtPosition(context: TemplateContext): CompletionInfo {
+  public getCompletionsAtPosition(context: TemplateContext): CompletionInfo {
     this.logger.log('getCompletionsAtPosition: ' + context.text)
 
     const schemaTables = this.schema.getTables()
@@ -201,7 +201,7 @@ export default class MySqlLanguageService implements TemplateLanguageService {
     }
   }
 
-  getSemanticDiagnostics(context: TemplateContext): Diagnostic[] {
+  public getSemanticDiagnostics(context: TemplateContext): Diagnostic[] {
     this.logger.log('getSemanticDiagnostics: ' + context.text)
 
     const tables = this.schema.getTables()

@@ -1,19 +1,19 @@
 interface SQLKeywordData {
-  version: number
-  keywords: SQLKeyword[]
+  readonly version: number
+  readonly keywords: SQLKeyword[]
 }
 
 export interface SQLKeywordReference {
-  name: string
-  url: string
+  readonly name: string
+  readonly url: string
 }
 
 interface SQLKeyword {
-  name: string
-  category: string
-  description: string
-  codeExample: string
-  reference: SQLKeywordReference
+  readonly name: string
+  readonly category: string
+  readonly description: string
+  readonly codeExample: string
+  readonly reference: SQLKeywordReference
 }
 
 export const keywordData: SQLKeywordData = {

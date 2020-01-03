@@ -18,8 +18,8 @@ export interface Column {
 }
 
 interface SchemaOptions {
-  databaseName: string
-  databaseUri: string
+  readonly databaseName: string
+  readonly databaseUri: string
 }
 
 export default class Schema {
