@@ -24,7 +24,7 @@ cd example-project && yarn install
 cd .. && yarn watch
 ```
 
-Change the plugin path name in example-project/tsconfig.json. Navigate to `example-project/src/index.ts` and you should see errors in the `invalid queries` section.
+Navigate to `example-project/tsconfig.json` and change the plugin path name for your setup. Navigate to `example-project/src/index.ts` and you should see errors in the `invalid queries` section.
 
 ## Todos
 
