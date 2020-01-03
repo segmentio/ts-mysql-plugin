@@ -1,0 +1,8 @@
+{
+  "devDependencies": {
+    "prettier": "^1.19.1"
+  },
+  "dependencies": {
+    "sql-template-strings": "^2.2.2"
+  }
+}
