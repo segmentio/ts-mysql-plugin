@@ -19,6 +19,7 @@ Prerequisite: Go is required in order to build the binary for the MySQL parser.
 Run the following:
 
 ```shell
+go get
 yarn install && yarn build
 cd example-project && yarn install
 cd .. && yarn watch
