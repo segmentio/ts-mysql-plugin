@@ -39,17 +39,6 @@ function padding(amount: number): string {
   return '&nbsp;'.repeat(amount)
 }
 
-const KEYWORDS: CompletionEntry[] = keywords.map(
-  (keyword: string): CompletionEntry => {
-    return {
-      name: keyword.toUpperCase(),
-      kind: ScriptElementKind.keyword,
-      kindModifiers: 'echo',
-      sortText: 'echo'
-    }
-  }
-)
-
 interface MySqlLanguageServiceOptions {
   databaseUri: string
   logger: Logger
@@ -154,8 +143,19 @@ export default class MySqlLanguageService implements TemplateLanguageService {
   public getCompletionsAtPosition(context: TemplateContext): CompletionInfo {
     this.logger.log('getCompletionsAtPosition: ' + context.text)
 
+    const keywordEntries: CompletionEntry[] = keywords.map(
+      (keyword: string): CompletionEntry => {
+        return {
+          name: keyword.toUpperCase(),
+          kind: ScriptElementKind.keyword,
+          kindModifiers: '',
+          sortText: keyword
+        }
+      }
+    )
+
     const schemaTables = this.schema.getTables()
-    const TABLES = schemaTables.map(
+    const tableEntries = schemaTables.map(
       (table: Table): CompletionEntry => {
         return {
           name: table.name,
@@ -180,7 +180,7 @@ export default class MySqlLanguageService implements TemplateLanguageService {
       })
     }
 
-    const COLUMNS = columns.map(
+    const columnEntries = columns.map(
       (column: Column): CompletionEntry => {
         return {
           name: column.name,
@@ -191,13 +191,11 @@ export default class MySqlLanguageService implements TemplateLanguageService {
       }
     )
 
-    const entries = TABLES.concat(COLUMNS).concat(KEYWORDS)
-
     return {
-      isGlobalCompletion: false,
-      isMemberCompletion: false,
+      entries: tableEntries.concat(columnEntries).concat(keywordEntries),
       isNewIdentifierLocation: false,
-      entries
+      isGlobalCompletion: false,
+      isMemberCompletion: false
     }
   }
 
