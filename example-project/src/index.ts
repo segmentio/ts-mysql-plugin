@@ -32,3 +32,10 @@ sql`
   LEFT JIN workspaces w
   ON s.workspace_id = w.id
   WHERE s.workspace_id = 'foo'`
+
+sql`
+  SELECT s.slug
+  FROM sources s
+  LEFT JOIN workspaces w
+  ON s.workspace_id = w.id
+  WHERE s.workspace_i = 'foo'`

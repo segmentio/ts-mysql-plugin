@@ -11,6 +11,11 @@ interface SyntaxErrorData {
   readonly end: number
 }
 
+interface Position {
+  readonly start: number
+  readonly end: number
+}
+
 type QueryToParseResult = Map<string, ParseResult>
 
 export default class Analyzer {
@@ -88,9 +93,16 @@ export default class Analyzer {
 
       const schemaTable = schemaTables.find(t => t.name === name)
       if (!schemaTable) {
-        const start = query.indexOf(name) + 1
-        const end = start + name.length
-        throw new InvalidTableError({ table: name, start, end })
+        const position = this.getFirstPosition(query, name)
+        if (!position) {
+          return
+        }
+
+        throw new InvalidTableError({
+          table: name,
+          start: position.start,
+          end: position.end
+        })
       }
 
       this.analyzeColumns(query, queryTable, schemaTable)
@@ -103,34 +115,49 @@ export default class Analyzer {
     queryColumns.forEach(queryColumn => {
       const { name: columnName } = queryColumn
 
-      const column = schemaTable.columns.find(c => c.name === columnName)
-      if (!column) {
-        // Because we are unable to obtain the node position in the AST for this
-        // column name, we will resort to searching the query for whole words that
-        // match this name.
-        const indexes = findAllIndexes(columnName, query)
-        for (let i = 0; i < indexes.length; i++) {
-          const index = indexes[i]
-          const wordWithOffset = getWordAtOffset(index, query)
-          if (!wordWithOffset) {
-            continue
-          }
-          const { word } = wordWithOffset
-          // Choose the first matching whole word that matches the column name
-          // Helps prevent misidentifying a partial word in queries like: `SELECT name FROM workspaces WHERE nam = "foo"`
-          if (word === columnName) {
-            const start = index + 1
-            const end = start + columnName.length
-            throw new InvalidColumnError({
-              column: columnName,
-              table: tableName,
-              start,
-              end
-            })
-          }
-        }
+      const exists = schemaTable.columns.find(c => c.name === columnName)
+      if (exists) {
+        return
       }
+
+      const position = this.getFirstPosition(query, columnName)
+      if (!position) {
+        return
+      }
+
+      throw new InvalidColumnError({
+        column: columnName,
+        table: tableName,
+        start: position.start,
+        end: position.end
+      })
     })
+  }
+
+  // Get the first matching position of whole word `target` in `text`.
+  private getFirstPosition(text: string, target: string): Position | null {
+    const indexes = findAllIndexes(target, text)
+
+    for (let i = 0; i < indexes.length; i++) {
+      const index = indexes[i]
+      const wordWithOffset = getWordAtOffset(index, text)
+      if (!wordWithOffset) {
+        continue
+      }
+
+      if (wordWithOffset.word !== target) {
+        continue
+      }
+
+      const start = index + 1
+
+      return {
+        end: start + target.length,
+        start
+      }
+    }
+
+    return null
   }
 
   private parseSyntaxError(message: string): SyntaxErrorData {
