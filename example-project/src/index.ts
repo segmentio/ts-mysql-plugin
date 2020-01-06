@@ -17,9 +17,9 @@ sql`
   LEFT JOIN workspaces w
   ON s.workspace_id = w.id
   WHERE s.workspace_id = 'foo'`
-sql``
 
 // Invalid.
+sql``
 sql`SELECT`
 sql`SELECT id FRM workspaces`
 sql`SELECT id, name FROM worksp`
