@@ -14,11 +14,19 @@ class QueryError extends Error {
   }
 }
 
+class EmptyQueryError extends QueryError {
+  constructor() {
+    super()
+    this.name = 'EmptyQueryError'
+    this.code = 1001
+  }
+}
+
 class InvalidSyntaxError extends QueryError {
   constructor() {
     super()
     this.name = 'InvalidSyntaxError'
-    this.code = 1001
+    this.code = 1002
   }
 }
 
@@ -35,7 +43,7 @@ class InvalidKeywordError extends QueryError {
     super()
     this.name = 'InvalidKeywordError'
     this.data = data
-    this.code = 1002
+    this.code = 1003
   }
 }
 
@@ -52,7 +60,7 @@ class InvalidTableError extends QueryError {
     super()
     this.name = 'InvalidTableError'
     this.data = data
-    this.code = 1003
+    this.code = 1004
   }
 }
 
@@ -70,8 +78,8 @@ class InvalidColumnError extends QueryError {
     super()
     this.name = 'InvalidColumnError'
     this.data = data
-    this.code = 1004
+    this.code = 1005
   }
 }
 
-export { QueryError, InvalidSyntaxError, InvalidKeywordError, InvalidTableError, InvalidColumnError }
+export { QueryError, EmptyQueryError, InvalidSyntaxError, InvalidKeywordError, InvalidTableError, InvalidColumnError }

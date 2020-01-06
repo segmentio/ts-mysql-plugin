@@ -212,6 +212,17 @@ export default class MySqlLanguageService implements TemplateLanguageService {
       const { name, data } = error
 
       switch (name) {
+        case 'EmptyQueryError':
+          diagnostics.push(
+            this.createDiagnostic(context, {
+              message: 'Empty MySQL query.',
+              category: DiagnosticCategory.Error,
+              length: 2,
+              start: -1, // special case to highlight enclosing backticks
+              code: error.code
+            })
+          )
+          break
         case 'InvalidSyntaxError':
           diagnostics.push(
             this.createDiagnostic(context, {

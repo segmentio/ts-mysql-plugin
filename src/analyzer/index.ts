@@ -1,4 +1,10 @@
-import { InvalidColumnError, InvalidKeywordError, InvalidSyntaxError, InvalidTableError } from './errors'
+import {
+  EmptyQueryError,
+  InvalidColumnError,
+  InvalidKeywordError,
+  InvalidSyntaxError,
+  InvalidTableError
+} from './errors'
 import { keywords } from '../constants/keywords'
 import { parse, ParseResult, Table as QueryTable, Tables as QueryTables } from '../lib/sql-parser'
 import { Table as SchemaTable, Tables as SchemaTables } from '../schema'
@@ -26,6 +32,10 @@ export default class Analyzer {
   }
 
   public analyze(query: string, schemaTables: SchemaTables = []): void {
+    if (!query) {
+      throw new EmptyQueryError()
+    }
+
     const cachedResult = this.queryToParseResult.get(query)
     if (cachedResult) {
       this.analyzeResult(query, schemaTables, cachedResult)
