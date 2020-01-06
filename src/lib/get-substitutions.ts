@@ -9,7 +9,7 @@ export default function getSubstitutions(contents: string, locations: ReadonlyAr
 
   for (const span of locations) {
     parts.push(contents.slice(lastIndex, span.start))
-    const param = 'x'.repeat(span.end - span.start - 2)
+    const param = 'x'.repeat(span.end - span.start - 3)
     parts.push(`'${param}'`)
     lastIndex = span.end
   }
