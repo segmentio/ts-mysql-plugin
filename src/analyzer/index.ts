@@ -3,11 +3,18 @@ import {
   InvalidColumnError,
   InvalidKeywordError,
   InvalidSyntaxError,
-  InvalidTableError
+  InvalidTableError,
+  InvalidColumnValueError
 } from './errors'
 import { keywords } from '../constants/keywords'
-import { parse, ParseResult, Table as QueryTable, Tables as QueryTables } from '../lib/sql-parser'
-import { Table as SchemaTable, Tables as SchemaTables } from '../schema'
+import {
+  parse,
+  ParseResult,
+  Table as QueryTable,
+  Tables as QueryTables,
+  TableColumn as QueryColumn
+} from '../lib/sql-parser'
+import { Table as SchemaTable, Tables as SchemaTables, Column as SchemaColumn } from '../schema'
 import getWordAtOffset from '../lib/get-word-at-offset'
 import findAllIndexes from '../lib/find-all-indexes'
 
@@ -125,8 +132,9 @@ export default class Analyzer {
     queryColumns.forEach(queryColumn => {
       const { name: columnName } = queryColumn
 
-      const exists = schemaTable.columns.find(c => c.name === columnName)
-      if (exists) {
+      const schemaColumn = schemaTable.columns.find(c => c.name === columnName)
+      if (schemaColumn) {
+        this.analyzeColumnType(query, queryColumn, schemaColumn)
         return
       }
 
@@ -141,6 +149,41 @@ export default class Analyzer {
         start: position.start,
         end: position.end
       })
+    })
+  }
+
+  private analyzeColumnType(query: string, queryColumn: QueryColumn, schemaColumn: SchemaColumn) {
+    const { name: columnName, operator, value, tsType } = queryColumn
+
+    // Check for literal only columns.
+    // e.g. sql`SELECT id FROM workspaces WHERE version = 1 AND slug = 'xxxxx' AND sso_is_forced = "false"`
+    if (!operator || !tsType) {
+      return
+    }
+
+    if (tsType === schemaColumn.tsType) {
+      return
+    }
+
+    const predicate = tsType === 'string' ? `"${value}"` : value // special case for strings, TODO: support ''
+    const pattern = `${columnName} ${operator} ${predicate}`
+    const start = query.indexOf(pattern)
+
+    // this currently handles scenarios like substitutions, where the following query:
+    // SELECT * FROM workspaces WHERE id = ${id}
+    // is replaced with:
+    // SELECT * FROM workspaces WHERE id = "xxxx"
+    // This will need to be updated when support for embedded expressions is added.
+    if (start === -1) {
+      return
+    }
+
+    throw new InvalidColumnValueError({
+      expectedType: schemaColumn.tsType,
+      receivedType: tsType,
+      length: pattern.length,
+      start: start + 1,
+      end: start + predicate.length
     })
   }
 

@@ -19,15 +19,21 @@ func TestGetTables(t *testing.T) {
 				Name:  "workspaces",
 				Alias: "w",
 				Columns: []TableColumn{
-					TableColumn{Name: "id"},
+					TableColumn{
+						Name: "id",
+					},
 				},
 			},
 			Table{
 				Name:  "sources",
 				Alias: "s",
 				Columns: []TableColumn{
-					TableColumn{Name: "slug"},
-					TableColumn{Name: "workspace_id"},
+					TableColumn{
+						Name: "slug",
+					},
+					TableColumn{
+						Name: "workspace_id",
+					},
 				},
 			},
 		},
@@ -38,8 +44,12 @@ func TestGetTables(t *testing.T) {
 				Name:  "allowed_labels",
 				Alias: "",
 				Columns: []TableColumn{
-					TableColumn{Name: "workspace_id"},
-					TableColumn{Name: "labels"},
+					TableColumn{
+						Name: "workspace_id",
+					},
+					TableColumn{
+						Name: "labels",
+					},
 				},
 			},
 		},
@@ -53,14 +63,33 @@ func TestGetTables(t *testing.T) {
 			},
 		},
 	}, {
-		in: "SELECT id FROM workspaces WHERE version = 'xxxxx'",
+		in: "SELECT id FROM workspaces WHERE version = 332 AND slug = 'xxxxx' AND isForced = false",
 		out: []Table{
 			Table{
 				Name:  "workspaces",
 				Alias: "",
 				Columns: []TableColumn{
-					TableColumn{Name: "id"},
-					TableColumn{Name: "version"},
+					TableColumn{
+						Name: "id",
+					},
+					TableColumn{
+						Name: "version",
+						TsType: "number",
+						Value: 332,
+						Operator: "=",
+					},
+					TableColumn{
+						Name: "slug",
+						TsType: "string",
+						Value: "xxxxx",
+						Operator: "=",
+					},
+					TableColumn{
+						Name: "isForced",
+						TsType: "boolean",
+						Value: false,
+						Operator: "=",
+					},
 				},
 			},
 		},
@@ -71,7 +100,9 @@ func TestGetTables(t *testing.T) {
 				Name:  "workspaces",
 				Alias: "",
 				Columns: []TableColumn{
-					TableColumn{Name: "id"},
+					TableColumn{
+						Name: "id",
+					},
 				},
 			},
 		},

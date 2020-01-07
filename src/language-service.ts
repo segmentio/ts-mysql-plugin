@@ -276,6 +276,18 @@ export default class MySqlLanguageService implements TemplateLanguageService {
           )
           break
         }
+        case 'InvalidColumnValueError': {
+          diagnostics.push(
+            this.createDiagnostic(context, {
+              message: `Type ${data.receivedType} is not assignable to type ${data.expectedType}`,
+              category: DiagnosticCategory.Warning,
+              length: data.length,
+              start: data.start - 1,
+              code: error.code
+            })
+          )
+          break
+        }
       }
     }
 

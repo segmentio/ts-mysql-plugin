@@ -17,6 +17,18 @@ sql`
   LEFT JOIN workspaces w
   ON s.workspace_id = w.id
   WHERE s.workspace_id = 'foo'`
+sql`
+  SELECT id FROM workspaces
+  WHERE version = 1
+  AND slug = "some-slug"
+  AND sso_is_forced = false`
+
+const slug = 'some-slug'
+sql`
+  SELECT id FROM workspaces
+  WHERE version = ${slug}
+  AND slug = ${slug}
+  AND sso_is_forced = false`
 
 // Invalid.
 sql``
@@ -40,3 +52,21 @@ sql`
   LEFT JOIN workspaces w
   ON s.workspace_id = w.id
   WHERE s.workspace_i = 'foo'`
+
+sql`
+  SELECT id FROM workspaces
+  WHERE version = "some-version"
+  AND slug = "some-slug"
+  AND sso_is_forced = false`
+
+sql`
+  SELECT id FROM workspaces
+  WHERE version = 1
+  AND slug = false
+  AND sso_is_forced = false`
+
+sql`
+  SELECT id FROM workspaces
+  WHERE version = 1
+  AND slug = "some-slug"
+  AND sso_is_forced = "false"`

@@ -12,6 +12,9 @@ export interface Table {
 
 export interface TableColumn {
   name: string
+  value?: any
+  tsType?: string
+  operator?: string
 }
 
 interface ParseResultError {

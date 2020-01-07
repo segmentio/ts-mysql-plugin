@@ -82,4 +82,31 @@ class InvalidColumnError extends QueryError {
   }
 }
 
-export { QueryError, EmptyQueryError, InvalidSyntaxError, InvalidKeywordError, InvalidTableError, InvalidColumnError }
+interface InvalidColumnValueErrorData {
+  readonly expectedType: string
+  readonly receivedType: string
+  readonly length: number
+  readonly start: number
+  readonly end: number
+}
+
+class InvalidColumnValueError extends QueryError {
+  data: InvalidColumnValueErrorData
+
+  constructor(data: InvalidColumnValueErrorData) {
+    super()
+    this.name = 'InvalidColumnValueError'
+    this.data = data
+    this.code = 1006
+  }
+}
+
+export {
+  QueryError,
+  EmptyQueryError,
+  InvalidSyntaxError,
+  InvalidKeywordError,
+  InvalidTableError,
+  InvalidColumnError,
+  InvalidColumnValueError
+}

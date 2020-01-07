@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"sort"
+	"strconv"
 
 	"github.com/urfave/cli/v2"
 	"vitess.io/vitess/go/vt/sqlparser"
@@ -84,7 +85,10 @@ type TableColumns = []TableColumn
 
 // TableColumn represents a SQL table column.
 type TableColumn struct {
-	Name string `json:"name"`
+	Name     string `json:"name"`
+	Value    interface{} `json:"value"`
+	TsType   string `json:"tsType"`
+	Operator string `json:"operator"`
 }
 
 // Columns represents an array of columns.
@@ -96,10 +100,23 @@ type Column struct {
 	TableAlias string
 }
 
+// Comparisons represents an array of comparisons.
+type Comparisons = []Comparison
+
+// Comparison represents a comparison expression.
+type Comparison struct {
+	Table    string
+	Column   string
+	Operator string
+	Value    interface{}
+	TsType   string
+}
+
 // GetTables gets all tables in the query.
 func GetTables(tree sqlparser.SQLNode) Tables {
 	columnNames := make(map[string]bool, 0)
 	tableNames := make(map[string]bool, 0)
+	comparisons := make(Comparisons, 0)
 	columns := make(Columns, 0)
 	tables := make(Tables, 0)
 
@@ -132,6 +149,21 @@ func GetTables(tree sqlparser.SQLNode) Tables {
 			columnName := node.CompliantName()
 			if columnName != "" {
 				columnNames[columnName] = true
+			}
+		case *sqlparser.ComparisonExpr:
+			if sqlparser.IsColName(node.Left) {
+				left := node.Left.(*sqlparser.ColName)
+				value := GetValueAndType(node.Right)
+
+				if IsValue(node.Right) {
+					comparisons = append(comparisons, Comparison{
+						Table:    left.Qualifier.Name.CompliantName(),
+						Column:   left.Name.CompliantName(),
+						Operator: node.Operator,
+						Value:    value.Value,
+						TsType:   value.TsType,
+					})
+				}
 			}
 		}
 		return true, nil
@@ -177,7 +209,93 @@ func GetTables(tree sqlparser.SQLNode) Tables {
 		}
 	}
 
+	for _, comparison := range comparisons {
+		tableName := comparison.Table
+
+		if tableName == "" {
+			if len(tables) != 1 {
+				continue
+			}
+			tableName = tables[0].Name
+		}
+
+		for _, table := range tables {
+			if table.Name != tableName {
+				continue
+			}
+
+			for j, column := range table.Columns {
+				if column.Name != comparison.Column {
+					continue
+				}
+
+				column.Operator = comparison.Operator
+				column.TsType = comparison.TsType
+				column.Value = comparison.Value
+
+				table.Columns[j] = column
+			}
+		}
+	}
+
 	return tables
+}
+
+// IsValue returns true if the Expr is a string, integral or value arg.
+// NULL is not considered to be a value.
+func IsValue(node sqlparser.Expr) bool {
+	switch v := node.(type) {
+	case *sqlparser.SQLVal:
+		switch v.Type {
+		case sqlparser.StrVal, sqlparser.HexVal, sqlparser.IntVal, sqlparser.ValArg:
+			return true
+		}
+	case sqlparser.BoolVal:
+		{
+			return true
+		}
+	case *sqlparser.NullVal:
+		{
+			return true
+		}
+	}
+	return false
+}
+
+// SQLValue represents a SQL value.
+type SQLValue struct {
+	Value  interface{}
+	TsType string
+}
+
+// GetValueAndType returns the SQLValue for an expression.
+func GetValueAndType(node sqlparser.Expr) SQLValue {
+	switch v := node.(type) {
+	case *sqlparser.SQLVal:
+		switch v.Type {
+		case sqlparser.StrVal:
+			return SQLValue{
+				Value:  string(v.Val),
+				TsType: "string",
+			}
+		case sqlparser.IntVal, sqlparser.FloatVal, sqlparser.HexNum, sqlparser.HexVal:
+			value, _ := strconv.ParseInt(string(v.Val), 0, 64)
+			return SQLValue{
+				Value:  int(value),
+				TsType: "number",
+			}
+		}
+	case sqlparser.BoolVal:
+		value := false
+		if v {
+			value = true
+		}
+		return SQLValue{
+			Value:  value,
+			TsType: "boolean",
+		}
+	}
+	return SQLValue{}
 }
 
 func nameInTables(name string, tables []Table) bool {

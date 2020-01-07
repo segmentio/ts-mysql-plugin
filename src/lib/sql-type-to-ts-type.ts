@@ -39,7 +39,7 @@ export default function sqlTypeToTsType(dataType: SqlDataType): TsDataType {
     case SqlDataType.BINARY:
     case SqlDataType.VARBINARY:
     case SqlDataType.BIT:
-      return TsDataType.BUFFER
+      return TsDataType.STRING // TODO: is this better as a buffer?
     default:
       return TsDataType.ANY
   }
