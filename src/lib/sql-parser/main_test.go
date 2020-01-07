@@ -1,9 +1,9 @@
 package main
 
 import (
-	"reflect"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"vitess.io/vitess/go/vt/sqlparser"
 )
 
@@ -13,7 +13,7 @@ func TestGetTables(t *testing.T) {
 		in  string
 		out Tables
 	}{{
-		in:  "SELECT w.id, s.slug FROM workspaces w INNER JOIN sources s ON s.workspace_id = w.id",
+		in: "SELECT w.id, s.slug FROM workspaces w INNER JOIN sources s ON s.workspace_id = w.id",
 		out: []Table{
 			Table{
 				Name:  "workspaces",
@@ -32,10 +32,11 @@ func TestGetTables(t *testing.T) {
 			},
 		},
 	}, {
-		in:  "INSERT INTO allowed_labels (workspace_id, labels) VALUES ('some-id', 'some-label')",
+		in: "INSERT INTO allowed_labels (workspace_id, labels) VALUES ('some-id', 'some-label')",
 		out: []Table{
 			Table{
 				Name:  "allowed_labels",
+				Alias: "",
 				Columns: []TableColumn{
 					TableColumn{Name: "workspace_id"},
 					TableColumn{Name: "labels"},
@@ -43,11 +44,35 @@ func TestGetTables(t *testing.T) {
 			},
 		},
 	}, {
-		in:  "CREATE TABLE foo (id int, slug varbinary(10))",
+		in: "CREATE TABLE foo (id int, slug varbinary(10))",
 		out: []Table{
 			Table{
-				Name:  "foo",
+				Name:    "foo",
+				Alias:   "",
 				Columns: []TableColumn{},
+			},
+		},
+	}, {
+		in: "SELECT id FROM workspaces WHERE version = 'xxxxx'",
+		out: []Table{
+			Table{
+				Name:  "workspaces",
+				Alias: "",
+				Columns: []TableColumn{
+					TableColumn{Name: "id"},
+					TableColumn{Name: "version"},
+				},
+			},
+		},
+	}, {
+		in: "SELECT id FROM workspaces",
+		out: []Table{
+			Table{
+				Name:  "workspaces",
+				Alias: "",
+				Columns: []TableColumn{
+					TableColumn{Name: "id"},
+				},
 			},
 		},
 	}}
@@ -59,8 +84,9 @@ func TestGetTables(t *testing.T) {
 			continue
 		}
 		out := GetTables(tree)
-		if reflect.DeepEqual(out, tc.out) == false {
-			t.Errorf("GetTables('%s'): %s, want %s", tc.in, out, tc.out)
+		if cmp.Equal(out, tc.out) == false {
+			t.Error(cmp.Diff(out, tc.out))
+			t.Errorf("GetTables('%+v')\n Got: %+v\n Want: %+v\n", tc.in, out, tc.out)
 		}
 	}
 }
