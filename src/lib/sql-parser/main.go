@@ -85,10 +85,11 @@ type TableColumns = []TableColumn
 
 // TableColumn represents a SQL table column.
 type TableColumn struct {
-	Name     string `json:"name"`
+	Name     string      `json:"name"`
 	Value    interface{} `json:"value"`
-	TsType   string `json:"tsType"`
-	Operator string `json:"operator"`
+	TsType   string      `json:"tsType"`
+	Operator string      `json:"operator"`
+	InType   string      `json:"inType"` // list or expression
 }
 
 // Columns represents an array of columns.
@@ -110,6 +111,7 @@ type Comparison struct {
 	Operator string
 	Value    interface{}
 	TsType   string
+	InType   string
 }
 
 // GetTables gets all tables in the query.
@@ -162,8 +164,21 @@ func GetTables(tree sqlparser.SQLNode) Tables {
 						Operator: node.Operator,
 						Value:    value.Value,
 						TsType:   value.TsType,
+						InType:   "expression",
 					})
 				}
+			}
+		case *sqlparser.Insert:
+			rows := node.Rows.(sqlparser.Values)[0]
+			for i, column := range node.Columns {
+				value := GetValueAndType(rows[i])
+				comparisons = append(comparisons, Comparison{
+					Table:  node.Table.Name.CompliantName(),
+					Column: column.CompliantName(),
+					Value:  value.Value,
+					TsType: value.TsType,
+					InType: "list",
+				})
 			}
 		}
 		return true, nil
@@ -232,6 +247,7 @@ func GetTables(tree sqlparser.SQLNode) Tables {
 				column.Operator = comparison.Operator
 				column.TsType = comparison.TsType
 				column.Value = comparison.Value
+				column.InType = comparison.InType
 
 				table.Columns[j] = column
 			}
@@ -293,6 +309,11 @@ func GetValueAndType(node sqlparser.Expr) SQLValue {
 		return SQLValue{
 			Value:  value,
 			TsType: "boolean",
+		}
+	case *sqlparser.NullVal:
+		return SQLValue{
+			Value:  nil,
+			TsType: "null",
 		}
 	}
 	return SQLValue{}

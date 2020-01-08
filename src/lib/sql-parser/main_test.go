@@ -38,17 +38,29 @@ func TestGetTables(t *testing.T) {
 			},
 		},
 	}, {
-		in: "INSERT INTO allowed_labels (workspace_id, labels) VALUES ('some-id', 'some-label')",
+		in: "INSERT INTO allowed_labels (id, workspace_id, labels) VALUES ('some-id', 123, false)",
 		out: []Table{
 			Table{
 				Name:  "allowed_labels",
 				Alias: "",
 				Columns: []TableColumn{
 					TableColumn{
+						Name: "id",
+						InType: "list",
+						Value: "some-id",
+						TsType: "string",
+					},
+					TableColumn{
 						Name: "workspace_id",
+						InType: "list",
+						Value: 123,
+						TsType: "number",
 					},
 					TableColumn{
 						Name: "labels",
+						InType: "list",
+						Value: false,
+						TsType: "boolean",
 					},
 				},
 			},
@@ -74,18 +86,21 @@ func TestGetTables(t *testing.T) {
 					},
 					TableColumn{
 						Name: "version",
+						InType: "expression",
 						TsType: "number",
 						Value: 332,
 						Operator: "=",
 					},
 					TableColumn{
 						Name: "slug",
+						InType: "expression",
 						TsType: "string",
 						Value: "xxxxx",
 						Operator: "=",
 					},
 					TableColumn{
 						Name: "isForced",
+						InType: "expression",
 						TsType: "boolean",
 						Value: false,
 						Operator: "=",
@@ -102,6 +117,26 @@ func TestGetTables(t *testing.T) {
 				Columns: []TableColumn{
 					TableColumn{
 						Name: "id",
+					},
+				},
+			},
+		},
+	}, {
+		in: "SELECT id FROM workspaces WHERE version = NULL",
+		out: []Table{
+			Table{
+				Name:  "workspaces",
+				Alias: "",
+				Columns: []TableColumn{
+					TableColumn{
+						Name: "id",
+					},
+					TableColumn{
+						Name: "version",
+						InType: "expression",
+						TsType: "null",
+						Value: nil,
+						Operator: "=",
 					},
 				},
 			},

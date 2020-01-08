@@ -842,10 +842,9 @@ tweetnacl@^0.14.3, tweetnacl@~0.14.0:
   resolved "https://registry.yarnpkg.com/tweetnacl/-/tweetnacl-0.14.5.tgz#5ae68177f192d4456269d108afa93ff8743f4f64"
   integrity sha1-WuaBd/GS1EViadEIr6k/+HQ/T2Q=
 
-typescript-template-language-service-decorator@^2.2.0:
+typescript-template-language-service-decorator@segmentio/typescript-template-language-service-decorator:
   version "2.2.0"
-  resolved "https://registry.yarnpkg.com/typescript-template-language-service-decorator/-/typescript-template-language-service-decorator-2.2.0.tgz#4ee6d580f307fb9239978e69626f2775b8a59b2a"
-  integrity sha512-xiolqt1i7e22rpqMaprPgSFVgU64u3b9n6EJlAaUYE61jumipKAdI1+O5khPlWslpTUj80YzjUKjJ2jxT0D74w==
+  resolved "https://codeload.github.com/segmentio/typescript-template-language-service-decorator/tar.gz/45cadc9310dc5870e4b7c5f16687ae85d1e35734"
 
 typescript@^3.7.4:
   version "3.7.4"

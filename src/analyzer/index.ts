@@ -17,6 +17,8 @@ import {
 import { Table as SchemaTable, Tables as SchemaTables, Column as SchemaColumn } from '../schema'
 import getWordAtOffset from '../lib/get-word-at-offset'
 import findAllIndexes from '../lib/find-all-indexes'
+import Logger from '../logger'
+import { TemplateContext } from 'typescript-template-language-service-decorator'
 
 interface SyntaxErrorData {
   readonly near: string
@@ -33,28 +35,32 @@ type QueryToParseResult = Map<string, ParseResult>
 
 export default class Analyzer {
   private queryToParseResult: QueryToParseResult
+  private readonly logger: Logger
 
-  public constructor() {
+  public constructor(logger: Logger) {
+    this.logger = logger
     this.queryToParseResult = new Map()
   }
 
-  public analyze(query: string, schemaTables: SchemaTables = []): void {
-    if (!query) {
+  public analyze(context: TemplateContext, schemaTables: SchemaTables = []): void {
+    this.logger.log('analyze() ' + context.text)
+
+    if (!context.text) {
       throw new EmptyQueryError()
     }
 
-    const cachedResult = this.queryToParseResult.get(query)
+    const cachedResult = this.queryToParseResult.get(context.text)
     if (cachedResult) {
-      this.analyzeResult(query, schemaTables, cachedResult)
+      this.analyzeResult(context, schemaTables, cachedResult)
       return
     }
 
-    const result = parse(query)
-    this.queryToParseResult.set(query, result)
-    this.analyzeResult(query, schemaTables, result)
+    const result = parse(context.text)
+    this.queryToParseResult.set(context.text, result)
+    this.analyzeResult(context, schemaTables, result)
   }
 
-  private analyzeResult(query: string, schemaTables: SchemaTables, result: ParseResult): void {
+  private analyzeResult(context: TemplateContext, schemaTables: SchemaTables, result: ParseResult): void {
     const { error, data } = result
 
     if (error) {
@@ -62,7 +68,7 @@ export default class Analyzer {
     }
 
     if (schemaTables.length) {
-      this.analyzeSemantics(query, data.tables, schemaTables)
+      this.analyzeSemantics(context, data.tables, schemaTables)
     }
   }
 
@@ -74,8 +80,8 @@ export default class Analyzer {
     return parse(query)
   }
 
-  private analyzeSemantics(query: string, queryTables: QueryTables, schemaTables: SchemaTables): void {
-    this.analyzeTables(query, queryTables, schemaTables)
+  private analyzeSemantics(context: TemplateContext, queryTables: QueryTables, schemaTables: SchemaTables): void {
+    this.analyzeTables(context, queryTables, schemaTables)
   }
 
   private analyzeSyntax(error: Error): never {
@@ -98,7 +104,7 @@ export default class Analyzer {
     throw new InvalidSyntaxError()
   }
 
-  private analyzeTables(query: string, queryTables: QueryTables, schemaTables: SchemaTables): void {
+  private analyzeTables(context: TemplateContext, queryTables: QueryTables, schemaTables: SchemaTables): void {
     queryTables.forEach(queryTable => {
       const { name } = queryTable
 
@@ -110,7 +116,7 @@ export default class Analyzer {
 
       const schemaTable = schemaTables.find(t => t.name === name)
       if (!schemaTable) {
-        const position = this.getFirstPosition(query, name)
+        const position = this.getFirstPosition(context.text, name)
         if (!position) {
           return
         }
@@ -122,11 +128,11 @@ export default class Analyzer {
         })
       }
 
-      this.analyzeColumns(query, queryTable, schemaTable)
+      this.analyzeColumns(context, queryTable, schemaTable)
     })
   }
 
-  private analyzeColumns(query: string, queryTable: QueryTable, schemaTable: SchemaTable): void {
+  private analyzeColumns(context: TemplateContext, queryTable: QueryTable, schemaTable: SchemaTable): void {
     const { name: tableName, columns: queryColumns } = queryTable
 
     queryColumns.forEach(queryColumn => {
@@ -134,11 +140,11 @@ export default class Analyzer {
 
       const schemaColumn = schemaTable.columns.find(c => c.name === columnName)
       if (schemaColumn) {
-        this.analyzeColumnType(query, queryColumn, schemaColumn)
+        this.analyzeColumnType(context, queryColumn, schemaColumn)
         return
       }
 
-      const position = this.getFirstPosition(query, columnName)
+      const position = this.getFirstPosition(context.text, columnName)
       if (!position) {
         return
       }
@@ -152,38 +158,60 @@ export default class Analyzer {
     })
   }
 
-  private analyzeColumnType(query: string, queryColumn: QueryColumn, schemaColumn: SchemaColumn) {
-    const { name: columnName, operator, value, tsType } = queryColumn
+  private analyzeColumnType(context: TemplateContext, queryColumn: QueryColumn, schemaColumn: SchemaColumn) {
+    const { name: columnName, operator, value, tsType, inType } = queryColumn
 
     // Check for literal only columns.
     // e.g. sql`SELECT id FROM workspaces WHERE version = 1 AND slug = 'xxxxx' AND sso_is_forced = "false"`
-    if (!operator || !tsType) {
+    if (!tsType || !inType) {
       return
     }
 
+    // type is correct
     if (tsType === schemaColumn.tsType) {
       return
     }
 
-    const predicate = tsType === 'string' ? `"${value}"` : value // special case for strings, TODO: support ''
-    const pattern = `${columnName} ${operator} ${predicate}`
-    const start = query.indexOf(pattern)
+    // special case for null
+    if (tsType === 'null' && schemaColumn.optional) {
+      return
+    }
 
-    // this currently handles scenarios like substitutions, where the following query:
-    // SELECT * FROM workspaces WHERE id = ${id}
-    // is replaced with:
-    // SELECT * FROM workspaces WHERE id = "xxxx"
-    // This will need to be updated when support for embedded expressions is added.
-    if (start === -1) {
+    let pattern = new RegExp(value)
+
+    // e.g. 'SELECT id from workspaces WHERE version = 1'
+    // expression: version = 1, columnName: version, operator: =, value: 1
+    // also matches against embedded expressions e.g. SELECT id from workspaces WHERE version = ${someVersion}
+    if (inType === 'expression') {
+      pattern = new RegExp(`\`{0,1}${columnName}\`{0,1}\\s*${operator}\\s*(['"]+.+['"]+)?([\$\{]+\\w+}+)?`)
+    } else if (inType === 'list') {
+      // e.g. `INSERT INTO workspaces (id) VALUES (1) => 1 is the value
+      pattern = new RegExp(value)
+    }
+
+    // catch NULL or null, true or TRUE, false or FALSE, etc.
+    if (tsType === 'null' || tsType === 'boolean') {
+      pattern = new RegExp(value, 'i')
+    }
+
+    // match against raw text because it contains the string with the variable name,
+    // which means it will work with embedded expressions
+    const match = context.rawText.match(pattern)
+    if (!match) {
+      return
+    }
+
+    const start = match.index
+    if (!start) {
       return
     }
 
     throw new InvalidColumnValueError({
       expectedType: schemaColumn.tsType,
       receivedType: tsType,
-      length: pattern.length,
+      length: match[0].length,
       start: start + 1,
-      end: start + predicate.length
+      end: start + String(value).length // Cast null to string because null has no length property
     })
   }
 

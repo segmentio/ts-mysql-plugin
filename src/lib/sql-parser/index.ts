@@ -12,6 +12,7 @@ export interface Table {
 
 export interface TableColumn {
   name: string
+  inType: string // "expression" or "list"?
   value?: any
   tsType?: string
   operator?: string

@@ -8,5 +8,6 @@
         "databaseUri": "mysql://root@127.0.0.1/ctlplane"
       }
     ]
-  }
+  },
+  "exclude": ["migrations"]
 }

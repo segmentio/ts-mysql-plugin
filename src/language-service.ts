@@ -52,7 +52,7 @@ export default class MySqlLanguageService implements TemplateLanguageService {
 
   public constructor({ databaseUri, logger }: MySqlLanguageServiceOptions) {
     this.logger = logger
-    this.analyzer = new Analyzer()
+    this.analyzer = new Analyzer(logger)
     const { database: databaseName } = parseUri(databaseUri)
     this.databaseName = databaseName
     this.schema = new Schema({ databaseName, databaseUri })
@@ -207,7 +207,7 @@ export default class MySqlLanguageService implements TemplateLanguageService {
     const diagnostics: Diagnostic[] = []
 
     try {
-      this.analyzer.analyze(query, tables)
+      this.analyzer.analyze(context, tables)
     } catch (error) {
       const { name, data } = error
 

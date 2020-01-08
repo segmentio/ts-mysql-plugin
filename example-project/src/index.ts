@@ -7,10 +7,10 @@ sql`SELECT id, name FROM workspaces`
 sql`SELECT id, name FROM workspaces WHERE name = "some-name-1"`
 const name2 = 'some-name-2'
 sql`SELECT id, name FROM workspaces WHERE name = ${name2}`
-sql`INSERT INTO workspaces (id) VALUES (1)`
-sql`INSERT INTO workspaces (id, name) VALUES (1, "some-name-3")`
+sql`INSERT INTO workspaces (id) VALUES ("id")`
+sql`INSERT INTO workspaces (id, name) VALUES ("id", "some-name-3")`
 const name4 = 'some-name-4'
-sql`INSERT INTO workspaces (id, name) VALUES (1, ${name4})`
+sql`INSERT INTO workspaces (id, name) VALUES ("id", ${name4})`
 sql`
   SELECT s.slug
   FROM sources s
@@ -23,11 +23,11 @@ sql`
   AND slug = "some-slug"
   AND sso_is_forced = false`
 
-const slug = 'some-slug'
+const slug = 1
 sql`
   SELECT id FROM workspaces
   WHERE version = ${slug}
-  AND slug = ${slug}
+  AND slug = "slug"
   AND sso_is_forced = false`
 
 // Invalid.
@@ -70,3 +70,7 @@ sql`
   WHERE version = 1
   AND slug = "some-slug"
   AND sso_is_forced = "false"`
+
+sql`INSERT INTO workspaces (id, slug) VALUES ("sdkfj", FALSE)`
+
+sql`INSERT INTO workspaces (id, name, version) VALUES ("id", "name", "some-version")`
