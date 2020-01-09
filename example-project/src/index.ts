@@ -244,3 +244,20 @@ const nestedNumberVariable = {
 sql`SELECT * FROM workspaces WHERE version = ${nestedNumberVariable.foo.bar.baz}`
 // Nested number embedded, failure
 sql`SELECT * FROM workspaces WHERE id = ${nestedNumberVariable.foo.bar.baz}`
+
+/**
+ * Nested string variable.
+ */
+
+const nestedStringVariable = {
+  foo: {
+    bar: {
+      baz: 'hello world'
+    }
+  }
+}
+
+// Nested string embedded, success
+sql`SELECT * FROM workspaces WHERE id = ${nestedStringVariable.foo.bar.baz}`
+// Nested string embedded, failure
+sql`SELECT * FROM workspaces WHERE created_at = ${nestedStringVariable.foo.bar.baz}`
