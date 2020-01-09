@@ -41,11 +41,19 @@ sql`SELECT s.slug FROM sources s LEFT JOIN workspaces w ON s.workspace_id = w.id
 sql`CREATE TABLE foo (id int)`
 sql`CREATE TABLE workspaces (id integer)`
 sql`USE ctlplane`
+sql`SELECT * FROM sources WHERE JSON_TYPE(JSON_EXTRACT(labels, '$')) != 'NULL'`
 
 // Invalid
 sql`CREATE TABLE workspaces (id in)`
 sql`CREATE TABLE workspaces (id integ)`
 sql`US ctlplane`
+sql`SELECT * FROM sources WHERE JSON_TYPE(JSON_EXTRACT(lbels, '$')) != 'NULL'`
+// TODO: fix the highlighted position, error is correct.
+const input = { workspaceId: '' }
+sql`
+  SELECT labels FROM sources
+  WHERE workspace_id = ${input.workspaceId}
+  AND JSON_TYPE(JSON_EXTRACT(lbels, '$')) != 'NULL'`
 
 /**
  * The following section is for type validation. It is broken up into: literals, variables, and special scenarios.

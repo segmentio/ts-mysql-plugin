@@ -149,11 +149,6 @@ func GetTables(tree sqlparser.SQLNode) Tables {
 			if tableName != "" {
 				tableNames[tableName] = true
 			}
-		case sqlparser.ColIdent:
-			columnName := node.CompliantName()
-			if columnName != "" {
-				columnNames[columnName] = true
-			}
 		case *sqlparser.ComparisonExpr:
 			if sqlparser.IsColName(node.Left) {
 				left := node.Left.(*sqlparser.ColName)
@@ -174,6 +169,10 @@ func GetTables(tree sqlparser.SQLNode) Tables {
 			rows := node.Rows.(sqlparser.Values)[0]
 			for i, column := range node.Columns {
 				value := GetValueAndType(rows[i])
+				name := column.CompliantName()
+				// This allows us to skip looking for `ColIdent`, which solves the problem that Vitess has
+				// of misidentifying function calls as `ColIdent`
+				columnNames[name] = true
 				comparisons = append(comparisons, Comparison{
 					Table:  node.Table.Name.CompliantName(),
 					Column: column.CompliantName(),

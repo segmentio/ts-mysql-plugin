@@ -181,6 +181,22 @@ func TestGetTables(t *testing.T) {
 				},
 			},
 		},
+	}, {
+		in: "SELECT id FROM workspaces WHERE JSON_TYPE(JSON_EXTRACT(features, '$')) != 'NULL'",
+		out: []Table{
+			Table{
+				Name:  "workspaces",
+				Alias: "",
+				Columns: []TableColumn{
+					TableColumn{
+						Name: "id",
+					},
+					TableColumn{
+						Name: "features",
+					},
+				},
+			},
+		},
 	}}
 
 	for _, tc := range testcases {
