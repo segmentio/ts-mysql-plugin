@@ -19,8 +19,10 @@ class MySqlPlugin {
   public create(info: ts.server.PluginCreateInfo): ts.LanguageService {
     const logger = new Logger(info.project)
 
+    const { tags = ['sql', 'SQL'], databaseUri } = info.config
+
     const templateSettings: TemplateSettings = {
-      tags: ['sql', 'SQL'],
+      tags,
       enableForStringWithSubstitutions: true,
       getSubstitutions: (contents: string, _, node: ts.TemplateExpression) => {
         const checker = info.project
@@ -47,7 +49,7 @@ class MySqlPlugin {
     }
 
     const service = new MySqlLanguageService({
-      databaseUri: info.config.databaseUri,
+      databaseUri,
       logger
     })
 
