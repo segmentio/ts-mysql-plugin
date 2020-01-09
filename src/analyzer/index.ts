@@ -43,7 +43,7 @@ export default class Analyzer {
   }
 
   public analyze(context: TemplateContext, schemaTables: SchemaTables = []): void {
-    this.logger.log('analyze() ' + context.text)
+    this.logger.log('analyze()')
 
     if (!context.text) {
       throw new EmptyQueryError()
@@ -161,8 +161,6 @@ export default class Analyzer {
   private analyzeColumnType(context: TemplateContext, queryColumn: QueryColumn, schemaColumn: SchemaColumn) {
     const { name: columnName, operator, value, tsType, inType } = queryColumn
 
-    // Check for literal only columns.
-    // e.g. sql`SELECT id FROM workspaces WHERE version = 1 AND slug = 'xxxxx' AND sso_is_forced = "false"`
     if (!tsType || !inType) {
       return
     }
@@ -183,14 +181,14 @@ export default class Analyzer {
     // expression: version = 1, columnName: version, operator: =, value: 1
     // also matches against embedded expressions e.g. SELECT id from workspaces WHERE version = ${someVersion}
     if (inType === 'expression') {
-      pattern = new RegExp(`\`{0,1}${columnName}\`{0,1}\\s*${operator}\\s*(['"]+.+['"]+)?([\$\{]+\\w+}+)?`)
+      pattern = new RegExp(`\`{0,1}${columnName}\`{0,1}\\s*${operator}\\s*(['"]+.+['"]+)?([\$\{]+[\\S]+}+)?`)
     } else if (inType === 'list') {
       // e.g. `INSERT INTO workspaces (id) VALUES (1) => 1 is the value
       pattern = new RegExp(value)
     }
 
-    // catch NULL or null, true or TRUE, false or FALSE, etc.
-    if (tsType === 'null' || tsType === 'boolean') {
+    // catch NULL or null
+    if (tsType === 'null') {
       pattern = new RegExp(value, 'i')
     }
 

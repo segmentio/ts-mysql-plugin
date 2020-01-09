@@ -141,6 +141,46 @@ func TestGetTables(t *testing.T) {
 				},
 			},
 		},
+	}, {
+		in: "SELECT id FROM workspaces WHERE created_at = '2020-01-09T00:57:29.965Z'",
+		out: []Table{
+			Table{
+				Name:  "workspaces",
+				Alias: "",
+				Columns: []TableColumn{
+					TableColumn{
+						Name: "id",
+					},
+					TableColumn{
+						Name: "created_at",
+						InType: "expression",
+						TsType: "date",
+						Value: "2020-01-09T00:57:29.965Z",
+						Operator: "=",
+					},
+				},
+			},
+		},
+	}, {
+		in: "SELECT id FROM workspaces WHERE features = '{}'",
+		out: []Table{
+			Table{
+				Name:  "workspaces",
+				Alias: "",
+				Columns: []TableColumn{
+					TableColumn{
+						Name: "id",
+					},
+					TableColumn{
+						Name: "features",
+						InType: "expression",
+						TsType: "object",
+						Value: "{}",
+						Operator: "=",
+					},
+				},
+			},
+		},
 	}}
 
 	for _, tc := range testcases {

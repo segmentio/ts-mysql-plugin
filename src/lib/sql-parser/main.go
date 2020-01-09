@@ -7,6 +7,7 @@ import (
 	"os"
 	"sort"
 	"strconv"
+	"time"
 
 	"github.com/urfave/cli/v2"
 	"vitess.io/vitess/go/vt/sqlparser"
@@ -290,6 +291,25 @@ func GetValueAndType(node sqlparser.Expr) SQLValue {
 	case *sqlparser.SQLVal:
 		switch v.Type {
 		case sqlparser.StrVal:
+			value := string(v.Val)
+
+			_, err := time.Parse(time.RFC3339, value)
+			if err == nil {
+				return SQLValue{
+					Value:  value,
+					TsType: "date",
+				}
+			}
+
+			var data interface{}
+			err = json.Unmarshal([]byte(value), &data)
+			if err == nil {
+				return SQLValue{
+					Value:  value,
+					TsType: "object",
+				}
+			}
+
 			return SQLValue{
 				Value:  string(v.Val),
 				TsType: "string",

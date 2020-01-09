@@ -71,8 +71,6 @@ export default class MySqlLanguageService implements TemplateLanguageService {
   }
 
   public getQuickInfoAtPosition(context: TemplateContext, position: LineAndCharacter): QuickInfo | undefined {
-    this.logger.log('getQuickInfoAtPosition: ' + context.text)
-
     const offset = context.toOffset(position)
     const wordWithOffset = getWordAtOffset(offset, context.text)
     if (!wordWithOffset) {
@@ -141,8 +139,6 @@ export default class MySqlLanguageService implements TemplateLanguageService {
   }
 
   public getCompletionsAtPosition(context: TemplateContext): CompletionInfo {
-    this.logger.log('getCompletionsAtPosition: ' + context.text)
-
     const keywordEntries: CompletionEntry[] = keywords.map(
       (keyword: string): CompletionEntry => {
         return {
@@ -200,7 +196,7 @@ export default class MySqlLanguageService implements TemplateLanguageService {
   }
 
   public getSemanticDiagnostics(context: TemplateContext): Diagnostic[] {
-    this.logger.log('getSemanticDiagnostics: ' + context.text)
+    this.logger.log('getSemanticDiagnostics: ')
 
     const tables = this.schema.getTables()
     const query = context.text
