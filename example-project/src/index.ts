@@ -252,6 +252,23 @@ sql`SELECT * FROM workspaces WHERE features = ${JSON.stringify(objectVariable)}`
 sql`SELECT * FROM workspaces WHERE id = ${JSON.stringify(objectVariable)}`
 
 /**
+ * Nested object variable. TODO: fixme
+ */
+
+const nestedObjectVariable = {
+  foo: {
+    bar: {
+      baz: {}
+    }
+  }
+}
+
+// Nested object embedded, success
+sql`SELECT * FROM workspaces WHERE features = ${JSON.stringify(nestedObjectVariable.foo.bar.baz)}`
+// Nested object embedded, failure
+sql`SELECT * FROM workspaces WHERE id = ${JSON.stringify(nestedObjectVariable.foo.bar.baz)}`
+
+/**
  * Variable date.
  */
 
@@ -274,7 +291,7 @@ const nestedDateVariable = {
   }
 }
 
-// Variable date embedded, success
+// Nested date embedded, success
 sql`SELECT * FROM workspaces WHERE created_at = ${nestedDateVariable.foo.bar.baz}`
-// Variable date embedded, failure
+// Nested date embedded, failure
 sql`SELECT * FROM workspaces WHERE id = ${nestedDateVariable.foo.bar.baz}`
