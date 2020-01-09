@@ -24,7 +24,7 @@ yarn add --dev ts-mysql-plugin
 
 Step 2: TS Config.
 
-Add the plugin to your compiler options in `tsconfig.json`:
+Add the plugin to your compiler options in `tsconfig.json`. Note that `databaseUri` is optional, but recommended.
 
 ```json
 {
@@ -32,7 +32,7 @@ Add the plugin to your compiler options in `tsconfig.json`:
     "plugins": [
       {
         "name": "ts-mysql-plugin",
-        "databaseUri": "mysql://USER@HOST/DB_NAME" // optional, but recommended
+        "databaseUri": "mysql://USER@HOST/DB_NAME"
       }
     ]
   }
