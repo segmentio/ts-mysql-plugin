@@ -295,3 +295,45 @@ const nestedDateVariable = {
 sql`SELECT * FROM workspaces WHERE created_at = ${nestedDateVariable.foo.bar.baz}`
 // Nested date embedded, failure
 sql`SELECT * FROM workspaces WHERE id = ${nestedDateVariable.foo.bar.baz}`
+
+/**
+ * Class.
+ */
+
+class TestClassInput {
+  createdAt: Date
+  workspaceId: string
+}
+
+function testClassInput(input: TestClassInput) {
+  // success
+  sql`SELECT * FROM workspaces WHERE id = ${input.workspaceId}`
+  // failure
+  sql`SELECT * FROM workspaces WHERE id = ${input.createdAt}`
+}
+
+testClassInput({
+  createdAt: new Date(),
+  workspaceId: 'some-workspace-id'
+})
+
+/**
+ * Interface.
+ */
+
+interface TestInterfaceInput {
+  createdAt: Date
+  workspaceId: string
+}
+
+function testInterfaceInput(input: TestInterfaceInput) {
+  // success
+  sql`SELECT * FROM workspaces WHERE id = ${input.workspaceId}`
+  // failure
+  sql`SELECT * FROM workspaces WHERE id = ${input.createdAt}`
+}
+
+testInterfaceInput({
+  createdAt: new Date(),
+  workspaceId: 'some-workspace-id'
+})
