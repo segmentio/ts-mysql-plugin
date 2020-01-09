@@ -27,7 +27,7 @@ export default function sqlTypeToTsType(dataType: SqlDataType): TsDataType {
     case SqlDataType.TINYINT:
       return TsDataType.BOOLEAN
     case SqlDataType.JSON:
-      return TsDataType.OBJECT
+      return TsDataType.STRING // TODO: is this better as an object?
     case SqlDataType.DATE:
     case SqlDataType.DATETIME:
     case SqlDataType.TIMESTAMP:

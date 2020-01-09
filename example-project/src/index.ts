@@ -91,7 +91,7 @@ sql`SELECT * FROM workspaces WHERE version = null`
 sql`SELECT * FROM workspaces WHERE id = null`
 
 /**
- * Literal undefined. TODO: fixme
+ * Literal undefined. TODO: fixme, undefined is not allowed.
  */
 
 // Literal undefined embedded, success
