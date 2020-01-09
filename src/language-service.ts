@@ -39,6 +39,19 @@ function padding(amount: number): string {
   return '&nbsp;'.repeat(amount)
 }
 
+function createRow(column: Column): string[] {
+  const pad = padding(5)
+  return [
+    truncate(column.name),
+    pad,
+    truncate(column.sqlType),
+    pad,
+    truncate(column.tsType),
+    pad,
+    String(column.optional)
+  ]
+}
+
 interface MySqlLanguageServiceOptions {
   databaseUri: string
   logger: Logger
@@ -92,18 +105,17 @@ export default class MySqlLanguageService implements TemplateLanguageService {
       return
     }
 
+    const pad = padding(5)
+    const tableHeader = ['Name', pad, 'SQL Type', pad, 'TS Type', pad, 'Optional']
+
     const schemaTables = this.schema.getTables()
     const queryTables = result.data.tables
     const queryTable = queryTables.find(t => t.name === word)
     if (queryTable) {
       const schemaTable = schemaTables.find(t => t.name === queryTable.name)
       if (schemaTable) {
-        const pad = padding(5)
-        const header = ['Name', pad, 'Type', pad, 'Optional']
-        const rows = schemaTable.columns.map(column => {
-          return [truncate(column.name), pad, truncate(column.sqlType), pad, column.optional]
-        })
-        docs.push({ kind: '', text: markdownTable([header, ...rows]) })
+        const rows = schemaTable.columns.map(column => createRow(column))
+        docs.push({ kind: '', text: markdownTable([tableHeader, ...rows]) })
       }
     }
 
@@ -119,10 +131,8 @@ export default class MySqlLanguageService implements TemplateLanguageService {
     }
 
     if (schemaColumn) {
-      const pad = padding(5)
-      const header = ['Name', pad, 'Type', pad, 'Optional']
-      const row = [truncate(schemaColumn.name), pad, truncate(schemaColumn.sqlType), pad, schemaColumn.optional]
-      docs.push({ kind: '', text: markdownTable([header, row]) })
+      const row = createRow(schemaColumn)
+      docs.push({ kind: '', text: markdownTable([tableHeader, row]) })
     }
 
     return {
