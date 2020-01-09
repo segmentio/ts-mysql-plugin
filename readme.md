@@ -31,17 +31,13 @@ Navigate to `example-project/tsconfig.json` and change the plugin path name for 
 
 ### High Priority
 
-- [ ] Existing schema errors do not display on startup.
 - [ ] Ignore `Create` table table/column errors from schema
 - [ ] E2E tests
 
 ### Low Priority
 
-- [ ] Explore type validation
 - [ ] Figure out how to use relative path in example-project/tsconfig.json
-- [ ] Figure out better substitution options for tagged expressions (instead of "XXXX")
 - [ ] Add support for `TEMPORARY` (e.g. `CREATE TEMPORARY TABLE`) in Vitess (or fork).
-- [ ] Clean up Go code in src/lib/sql-parser
 - [ ] Finish all keyword documentation.
 
 ## Note
