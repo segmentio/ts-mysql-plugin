@@ -18,17 +18,19 @@ export interface TableColumn {
   operator?: string
 }
 
-interface ParseResultError {
+export interface ParseResultError {
   name: string
   message: string
 }
 
-interface ParseResultData {
-  ast: {
+export interface ParseResultData {
+  tables: Tables
+  /* The SQL statement type */
+  type: string
+  tree: {
     // eslint-disable-next-line
     [name: string]: any
   }
-  tables: Tables
 }
 
 export interface ParseResult {

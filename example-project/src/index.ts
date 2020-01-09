@@ -34,6 +34,20 @@ sql`SELECT name FROM workspaces WHERE nam = "foo"`
 sql`SELECT s.slug FROM sources s LEFT JOIN workspaces w ON s.workspace_id = w.id WHERE s.workspace_i = 'foo'`
 
 /**
+ * The following section is for different statement types.
+ */
+
+//  Valid
+sql`CREATE TABLE foo (id int)`
+sql`CREATE TABLE workspaces (id integer)`
+sql`USE ctlplane`
+
+// Invalid
+sql`CREATE TABLE workspaces (id in)`
+sql`CREATE TABLE workspaces (id integ)`
+sql`US ctlplane`
+
+/**
  * The following section is for type validation. It is broken up into: literals, variables, and special scenarios.
  *
  *  - All literal scenarios are encompassed by all primitive types in an embedded and unembedded format.

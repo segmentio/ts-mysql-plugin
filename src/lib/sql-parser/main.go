@@ -40,8 +40,8 @@ func main() {
 				Usage:   "parse a sql query",
 				Action: func(c *cli.Context) error {
 					result := map[string]interface{}{}
-					tree, err := sqlparser.ParseStrictDDL(query)
 
+					Tree, err := sqlparser.ParseStrictDDL(query)
 					if err != nil {
 						result["error"] = Error{
 							Name:    "SyntaxError",
@@ -49,8 +49,9 @@ func main() {
 						}
 					} else {
 						result["data"] = map[string]interface{}{
-							"ast":    tree,
-							"tables": GetTables(tree),
+							"tables": GetTables(Tree),
+							"tree":   Tree,
+							"type":   sqlparser.Preview(query).String(),
 						}
 					}
 

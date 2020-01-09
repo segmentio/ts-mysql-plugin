@@ -65,15 +65,8 @@ Navigate to `example-project/tsconfig.json` and change the plugin path name for 
 
 ## Todos
 
-### High Priority
-
-- [ ] Ignore `Create` table table/column errors from schema
 - [ ] E2E tests
-
-### Low Priority
-
 - [ ] Figure out how to use relative path in example-project/tsconfig.json
-- [ ] Add support for `TEMPORARY` (e.g. `CREATE TEMPORARY TABLE`) in Vitess (or fork).
 - [ ] Finish all keyword documentation.
 
 ## Note

@@ -10,6 +10,7 @@ import { keywords } from '../constants/keywords'
 import {
   parse,
   ParseResult,
+  ParseResultData,
   Table as QueryTable,
   Tables as QueryTables,
   TableColumn as QueryColumn
@@ -62,13 +63,10 @@ export default class Analyzer {
 
   private analyzeResult(context: TemplateContext, schemaTables: SchemaTables, result: ParseResult): void {
     const { error, data } = result
-
     if (error) {
       this.analyzeSyntax(error)
-    }
-
-    if (schemaTables.length) {
-      this.analyzeSemantics(context, data.tables, schemaTables)
+    } else {
+      this.analyzeSemantics(context, data, schemaTables)
     }
   }
 
@@ -78,10 +76,6 @@ export default class Analyzer {
       return result
     }
     return parse(query)
-  }
-
-  private analyzeSemantics(context: TemplateContext, queryTables: QueryTables, schemaTables: SchemaTables): void {
-    this.analyzeTables(context, queryTables, schemaTables)
   }
 
   private analyzeSyntax(error: Error): never {
@@ -102,6 +96,21 @@ export default class Analyzer {
     }
 
     throw new InvalidSyntaxError()
+  }
+
+  private analyzeSemantics(context: TemplateContext, data: ParseResultData, schemaTables: SchemaTables): void {
+    // cannot validate without schema
+    if (!schemaTables.length) {
+      return
+    }
+
+    // do not validate tables/columns identified in DDL statements, as they are expected
+    // to either not exist in the schema yet, or will be changed by the query.
+    if (data.type === 'DDL') {
+      return
+    }
+
+    this.analyzeTables(context, data.tables, schemaTables)
   }
 
   private analyzeTables(context: TemplateContext, queryTables: QueryTables, schemaTables: SchemaTables): void {
