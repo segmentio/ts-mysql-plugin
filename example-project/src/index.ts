@@ -212,10 +212,10 @@ sql`SELECT * FROM workspaces WHERE created_at = ${dateVariable}`
 sql`SELECT * FROM workspaces WHERE id = ${dateVariable}`
 
 /**
- * Nested variable.
+ * Nested date variable.
  */
 
-const nestedVariable = {
+const nestedDateVariable = {
   foo: {
     bar: {
       baz: new Date()
@@ -223,7 +223,24 @@ const nestedVariable = {
   }
 }
 
-// Variable object embedded, success
-sql`SELECT * FROM workspaces WHERE created_at = ${nestedVariable.foo.bar.baz}`
-// Variable object embedded, failure
-sql`SELECT * FROM workspaces WHERE id = ${nestedVariable.foo.bar.baz}`
+// Variable date embedded, success
+sql`SELECT * FROM workspaces WHERE created_at = ${nestedDateVariable.foo.bar.baz}`
+// Variable date embedded, failure
+sql`SELECT * FROM workspaces WHERE id = ${nestedDateVariable.foo.bar.baz}`
+
+/**
+ * Nested number variable.
+ */
+
+const nestedNumberVariable = {
+  foo: {
+    bar: {
+      baz: 12345
+    }
+  }
+}
+
+// Nested number embedded, success
+sql`SELECT * FROM workspaces WHERE version = ${nestedNumberVariable.foo.bar.baz}`
+// Nested number embedded, failure
+sql`SELECT * FROM workspaces WHERE id = ${nestedNumberVariable.foo.bar.baz}`

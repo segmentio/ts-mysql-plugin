@@ -99,6 +99,11 @@ function getValueFromExpression(expression: ts.Expression, checker: ts.TypeCheck
       }
       return value
     case 'Number':
+      // TODO: explain why this is needed.
+      if (value === 'number') {
+        return '12345'
+      }
+      return value
     case 'Boolean':
       return value
     case 'Date':
