@@ -13,10 +13,26 @@ import (
 	"vitess.io/vitess/go/vt/sqlparser"
 )
 
+// Result represents the parse result.
+type Result struct {
+	Statements Statements `json:"statements"`
+	Error      *Error      `json:"error,omitempty"`
+}
+
 // Error represents an error.
 type Error struct {
-	Name    string `json:"name"`
-	Message string `json:"message"`
+	Name    string `json:"name,omitempty"`
+	Message string `json:"message,omitempty"`
+}
+
+// Statements represents all statements in the query.
+type Statements = []Statement
+
+// Statement represents a single statement in the query.
+type Statement struct {
+	Type   string              `json:"type"`
+	Tables Tables              `json:"tables"`
+	Tree   sqlparser.Statement `json:"tree"`
 }
 
 func main() {
@@ -39,20 +55,29 @@ func main() {
 				Aliases: []string{"v"},
 				Usage:   "parse a sql query",
 				Action: func(c *cli.Context) error {
-					result := map[string]interface{}{}
+					result := Result{}
 
-					Tree, err := sqlparser.ParseStrictDDL(query)
+					queries, err := sqlparser.SplitStatementToPieces(query)
 					if err != nil {
-						result["error"] = Error{
-							Name:    "SyntaxError",
-							Message: err.Error(),
-						}
+						result.Error = &Error{Name: "SyntaxError", Message: err.Error()}
 					} else {
-						result["data"] = map[string]interface{}{
-							"tables": GetTables(Tree),
-							"tree":   Tree,
-							"type":   sqlparser.Preview(query).String(),
+						statements := Statements{}
+
+						for _, query := range queries {
+							tree, err := sqlparser.ParseStrictDDL(query)
+							if err != nil {
+								result.Error = &Error{Name: "SyntaxError", Message: err.Error()}
+								break // if one query fails, the rest cannot be parsed
+							} else {
+								statements = append(statements, Statement{
+									Tables: GetTables(tree),
+									Tree:   tree,
+									Type:   sqlparser.Preview(query).String(),
+								})
+							}
 						}
+
+						result.Statements = statements
 					}
 
 					resultJSON, _ := json.Marshal(&result)

@@ -23,19 +23,22 @@ export interface ParseResultError {
   message: string
 }
 
-export interface ParseResultData {
-  tables: Tables
+export type Statements = Statement[]
+
+export interface Statement {
   /* The SQL statement type */
   type: string
+  /* The SQL tables/columns in the query */
+  tables: Tables
+  /* The SQL abstract syntax tree */
   tree: {
-    // eslint-disable-next-line
     [name: string]: any
   }
 }
 
 export interface ParseResult {
-  error: ParseResultError
-  data: ParseResultData
+  statements: Statement[]
+  error?: ParseResultError
 }
 
 export function parse(query: string): ParseResult {

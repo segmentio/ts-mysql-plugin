@@ -101,7 +101,7 @@ export default class MySqlLanguageService implements TemplateLanguageService {
     }
 
     const result = this.analyzer.getParseResult(context.text)
-    if (!result || !result.data) {
+    if (!result || !result.statements) {
       return
     }
 
@@ -109,31 +109,34 @@ export default class MySqlLanguageService implements TemplateLanguageService {
     const tableHeader = ['Name', pad, 'SQL Type', pad, 'TS Type', pad, 'Optional']
 
     const schemaTables = this.schema.getTables()
-    const queryTables = result.data.tables
-    const queryTable = queryTables.find(t => t.name === word)
-    if (queryTable) {
-      const schemaTable = schemaTables.find(t => t.name === queryTable.name)
-      if (schemaTable) {
-        const rows = schemaTable.columns.map(column => createRow(column))
-        docs.push({ kind: '', text: markdownTable([tableHeader, ...rows]) })
+
+    result.statements.forEach(statement => {
+      const queryTables = statement.tables
+      const queryTable = queryTables.find(t => t.name === word)
+      if (queryTable) {
+        const schemaTable = schemaTables.find(t => t.name === queryTable.name)
+        if (schemaTable) {
+          const rows = schemaTable.columns.map(column => createRow(column))
+          docs.push({ kind: '', text: markdownTable([tableHeader, ...rows]) })
+        }
       }
-    }
 
-    let schemaColumn: Column | null = null
+      let schemaColumn: Column | null = null
 
-    for (const queryTable of queryTables) {
-      const schemaTable = schemaTables.find(t => t.name === queryTable.name)
-      const column = schemaTable?.columns.find(c => c.name === word)
-      if (column) {
-        schemaColumn = column
-        break
+      for (const queryTable of queryTables) {
+        const schemaTable = schemaTables.find(t => t.name === queryTable.name)
+        const column = schemaTable?.columns.find(c => c.name === word)
+        if (column) {
+          schemaColumn = column
+          break
+        }
       }
-    }
 
-    if (schemaColumn) {
-      const row = createRow(schemaColumn)
-      docs.push({ kind: '', text: markdownTable([tableHeader, row]) })
-    }
+      if (schemaColumn) {
+        const row = createRow(schemaColumn)
+        docs.push({ kind: '', text: markdownTable([tableHeader, row]) })
+      }
+    })
 
     return {
       kind: ScriptElementKind.string,
@@ -176,13 +179,15 @@ export default class MySqlLanguageService implements TemplateLanguageService {
     let columns: Columns = []
 
     if (result) {
-      const queryTables = result.data.tables
-      queryTables.forEach(queryTable => {
-        const { name } = queryTable
-        const schemaTable = schemaTables.find(t => t.name === name)
-        if (schemaTable) {
-          columns = columns.concat(schemaTable.columns)
-        }
+      result.statements.forEach(statement => {
+        const queryTables = statement.tables
+        queryTables.forEach(queryTable => {
+          const { name } = queryTable
+          const schemaTable = schemaTables.find(t => t.name === name)
+          if (schemaTable) {
+            columns = columns.concat(schemaTable.columns)
+          }
+        })
       })
     }
 
