@@ -1,10 +1,13 @@
 import { SQL as sql } from 'sql-template-strings'
 
+// Empty query.
+sql``
+
 /**
- * This section serves as a quick gut check for valid/invalid queries. More comprehensive scenarios follow it.
+ * The following section is for keyword validation.
  */
 
-// Valid queries.
+// Valid keywords.
 sql`SELECT * FROM workspaces`
 sql`SELECT id FROM workspaces`
 sql`SELECT id, name FROM workspaces`
@@ -12,17 +15,28 @@ sql`INSERT INTO workspaces (id) VALUES ("id")`
 sql`INSERT INTO workspaces (id, name) VALUES ("id", "some-name-3")`
 sql`SELECT s.slug FROM sources s LEFT JOIN workspaces w ON s.workspace_id = w.id WHERE s.workspace_id = 'foo'`
 
-// Invalid queries.
-sql``
-sql`SELECT`
+// Invalid keywords.
+sql`SELEC`
 sql`SELECT id FRM workspaces`
-sql`SELECT id, name FROM worksp`
-sql`SELECT name FROM workspaces WHERE nam = "foo"`
 sql`SELECT s.slug FROM sources s LEFT JIN workspaces w ON s.workspace_id = w.id WHERE s.workspace_id = 'foo'`
+
+/**
+ * The following section is for table/column validation.
+ */
+
+// Valid tables/columns
+sql`SELECT id FROM workspaces`
+sql`SELECT id, name FROM workspaces`
+// Invalid tables/columns
+sql`SELECT id FROM worksp`
+sql`SELECT id, nam FROM workspaces`
+sql`SELECT name FROM workspaces WHERE nam = "foo"`
 sql`SELECT s.slug FROM sources s LEFT JOIN workspaces w ON s.workspace_id = w.id WHERE s.workspace_i = 'foo'`
 
 /**
- * Literals: all literal scenarios are encompassed by all primitive types in either an embedded or unembedded format.
+ * The following section is for type validation. It is broken up into: literals, variables, and special scenarios.
+ *
+ *  - All literal scenarios are encompassed by all primitive types in an embedded and unembedded format.
  */
 
 /**
