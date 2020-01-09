@@ -6,11 +6,47 @@ A typescript language service plugin that gives superpowers to SQL tagged templa
 
 ## Features
 
-- Autocomplete for MySQL keywords and table names/column names (powered by your schema).
-- Semantic error checking - (e.g. using valid table names/column names in your schema).
-- Hover documentation for all keywords (and always marked with a DDL/DML tag).
-- Hover documentation for table names/column names (shows DDL table in hover).
-- Syntax error checking.
+- Autocomplete for MySQL keywords
+- Autocomplete for table names and column names (if a local database URI is provided)
+- Hover documentation for MySQL keywords
+- Hover documentation for tables and columns (if a local database URI is provided)
+- Diagnostics for MySQL syntax errors
+- Diagnostics for invalid table names and column names (if a local database URI is provided)
+- Diagnostics for invalid column types (if a local database URI is provided)
+
+## Installing
+
+Step 1: Yarn.
+
+```sh
+yarn add --dev ts-mysql-plugin
+```
+
+Step 2: TS Config.
+
+Add the plugin to your compiler options in `tsconfig.json`:
+
+```json
+{
+  "compilerOptions": {
+    "plugins": [
+      {
+        "name": "ts-mysql-plugin",
+        "databaseUri": "mysql://USER@HOST/DB_NAME" // optional, but recommended
+      }
+    ]
+  }
+}
+```
+
+You can also optionally override the default tags ("SQL" and "sql") by adding a "tags" array to the config. For example, if you want the plugin to activate only on "Sql" tags:
+
+```json
+{
+  "name": "ts-mysql-plugin",
+  "tags": ["Sql"]
+}
+```
 
 ## Development
 
