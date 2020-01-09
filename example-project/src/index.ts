@@ -146,6 +146,23 @@ sql`SELECT * FROM workspaces WHERE sso_is_forced = ${booleanVariable}`
 sql`SELECT * FROM workspaces WHERE id = ${booleanVariable}`
 
 /**
+ * Nested boolean variable.
+ */
+
+const nestedBooleanVariable = {
+  foo: {
+    bar: {
+      baz: true
+    }
+  }
+}
+
+// Nested string embedded, success
+sql`SELECT * FROM workspaces WHERE id = ${nestedBooleanVariable.foo.bar.baz}`
+// Nested string embedded, failure
+sql`SELECT * FROM workspaces WHERE created_at = ${nestedBooleanVariable.foo.bar.baz}`
+
+/**
  * Variable null. TODO: fixme
  */
 
@@ -179,6 +196,23 @@ sql`SELECT * FROM workspaces WHERE version = ${numberVariable}`
 sql`SELECT * FROM workspaces WHERE id = ${numberVariable}`
 
 /**
+ * Nested number variable.
+ */
+
+const nestedNumberVariable = {
+  foo: {
+    bar: {
+      baz: 12345
+    }
+  }
+}
+
+// Nested number embedded, success
+sql`SELECT * FROM workspaces WHERE version = ${nestedNumberVariable.foo.bar.baz}`
+// Nested number embedded, failure
+sql`SELECT * FROM workspaces WHERE id = ${nestedNumberVariable.foo.bar.baz}`
+
+/**
  * Variable string.
  */
 
@@ -188,6 +222,23 @@ const stringVariable = 'hello world'
 sql`SELECT * FROM workspaces WHERE id = ${stringVariable}`
 // Variable string embedded, failure
 sql`SELECT * FROM workspaces WHERE version = ${stringVariable}`
+
+/**
+ * Nested string variable.
+ */
+
+const nestedStringVariable = {
+  foo: {
+    bar: {
+      baz: 'hello world'
+    }
+  }
+}
+
+// Nested string embedded, success
+sql`SELECT * FROM workspaces WHERE id = ${nestedStringVariable.foo.bar.baz}`
+// Nested string embedded, failure
+sql`SELECT * FROM workspaces WHERE created_at = ${nestedStringVariable.foo.bar.baz}`
 
 /**
  * Variable object. TODO: fixme
@@ -227,37 +278,3 @@ const nestedDateVariable = {
 sql`SELECT * FROM workspaces WHERE created_at = ${nestedDateVariable.foo.bar.baz}`
 // Variable date embedded, failure
 sql`SELECT * FROM workspaces WHERE id = ${nestedDateVariable.foo.bar.baz}`
-
-/**
- * Nested number variable.
- */
-
-const nestedNumberVariable = {
-  foo: {
-    bar: {
-      baz: 12345
-    }
-  }
-}
-
-// Nested number embedded, success
-sql`SELECT * FROM workspaces WHERE version = ${nestedNumberVariable.foo.bar.baz}`
-// Nested number embedded, failure
-sql`SELECT * FROM workspaces WHERE id = ${nestedNumberVariable.foo.bar.baz}`
-
-/**
- * Nested string variable.
- */
-
-const nestedStringVariable = {
-  foo: {
-    bar: {
-      baz: 'hello world'
-    }
-  }
-}
-
-// Nested string embedded, success
-sql`SELECT * FROM workspaces WHERE id = ${nestedStringVariable.foo.bar.baz}`
-// Nested string embedded, failure
-sql`SELECT * FROM workspaces WHERE created_at = ${nestedStringVariable.foo.bar.baz}`

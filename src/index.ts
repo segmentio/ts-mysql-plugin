@@ -105,6 +105,10 @@ function getValueFromExpression(expression: ts.Expression, checker: ts.TypeCheck
       }
       return value
     case 'Boolean':
+      // TODO: explain why this is needed.
+      if (value === 'boolean') {
+        return 'true'
+      }
       return value
     case 'Date':
       return `"${new Date().toISOString()}"`
