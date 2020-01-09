@@ -64,7 +64,7 @@ export default class Analyzer {
   private analyzeResult(context: TemplateContext, schemaTables: SchemaTables, result: ParseResult): void {
     const { error, data } = result
     if (error) {
-      this.analyzeSyntax(error)
+      this.analyzeSyntax(context, error)
     } else {
       this.analyzeSemantics(context, data, schemaTables)
     }
@@ -78,8 +78,8 @@ export default class Analyzer {
     return parse(query)
   }
 
-  private analyzeSyntax(error: Error): never {
-    const { near, start, end } = this.parseSyntaxError(error.message)
+  private analyzeSyntax(context: TemplateContext, error: Error): never {
+    const { near } = this.parseSyntaxError(error.message)
 
     // `near` is not found, e.g. `SELECT * FROM`, `SELECT * FROM workspaces WHERE id =`
     if (!near) {
@@ -88,11 +88,14 @@ export default class Analyzer {
 
     // `near` is a not valid keyword, e.g. sql`SELECT FRM`
     if (!keywords.includes(near)) {
-      throw new InvalidKeywordError({
-        keyword: near,
-        start,
-        end
-      })
+      const position = this.getFirstPosition(context.rawText, near)
+      if (position) {
+        throw new InvalidKeywordError({
+          keyword: near,
+          start: position.start,
+          end: position.end
+        })
+      }
     }
 
     throw new InvalidSyntaxError()
@@ -125,7 +128,7 @@ export default class Analyzer {
 
       const schemaTable = schemaTables.find(t => t.name === name)
       if (!schemaTable) {
-        const position = this.getFirstPosition(context.text, name)
+        const position = this.getFirstPosition(context.rawText, name)
         if (!position) {
           return
         }
@@ -153,7 +156,7 @@ export default class Analyzer {
         return
       }
 
-      const position = this.getFirstPosition(context.text, columnName)
+      const position = this.getFirstPosition(context.rawText, columnName)
       if (!position) {
         return
       }

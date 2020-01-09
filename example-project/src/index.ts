@@ -48,12 +48,15 @@ sql`CREATE TABLE workspaces (id in)`
 sql`CREATE TABLE workspaces (id integ)`
 sql`US ctlplane`
 sql`SELECT * FROM sources WHERE JSON_TYPE(JSON_EXTRACT(lbels, '$')) != 'NULL'`
-// TODO: fix the highlighted position, error is correct.
-const input = { workspaceId: '' }
+const input = { workspaceId: '', allowedLabels: [] }
 sql`
   SELECT labels FROM sources
   WHERE workspace_id = ${input.workspaceId}
   AND JSON_TYPE(JSON_EXTRACT(lbels, '$')) != 'NULL'`
+sql`
+  INSERT INTO allowed_labels (workspace_id, labels)
+  VALUES (${input.workspaceId}, ${JSON.stringify(input.allowedLabels)})
+  on dupicate key update labels = values(labels)`
 
 /**
  * The following section is for type validation. It is broken up into: literals, variables, and special scenarios.
@@ -179,9 +182,9 @@ const nestedBooleanVariable = {
   }
 }
 
-// Nested string embedded, success
-sql`SELECT * FROM workspaces WHERE id = ${nestedBooleanVariable.foo.bar.baz}`
-// Nested string embedded, failure
+// Nested boolean embedded, success
+sql`SELECT * FROM workspaces WHERE sso_is_forced = ${nestedBooleanVariable.foo.bar.baz}`
+// Nested boolean embedded, failure
 sql`SELECT * FROM workspaces WHERE created_at = ${nestedBooleanVariable.foo.bar.baz}`
 
 /**
