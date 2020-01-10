@@ -326,15 +326,6 @@ func GetValueAndType(node sqlparser.Expr) SQLValue {
 				}
 			}
 
-			var data interface{}
-			err = json.Unmarshal([]byte(value), &data)
-			if err == nil {
-				return SQLValue{
-					Value:  value,
-					TsType: "object",
-				}
-			}
-
 			return SQLValue{
 				Value:  string(v.Val),
 				TsType: "string",

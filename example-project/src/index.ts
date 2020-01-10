@@ -136,11 +136,11 @@ sql`SELECT * FROM workspaces WHERE version = 'hello world'`
 // Literal object embedded, success
 sql`SELECT * FROM workspaces WHERE features = ${'{}'}`
 // Literal object embedded, failure
-sql`SELECT * FROM workspaces WHERE id = ${'{}'}`
+sql`SELECT * FROM workspaces WHERE id = ${{}}`
 // Literal object, success
 sql`SELECT * FROM workspaces WHERE features = '{}'`
 // Literal object, failure
-sql`SELECT * FROM workspaces WHERE id = '{}'`
+sql`SELECT * FROM workspaces WHERE id = {}`
 
 /**
  * Literal date.
@@ -291,7 +291,7 @@ const nestedObjectVariable = {
 // Nested object embedded, success
 sql`SELECT * FROM workspaces WHERE features = ${JSON.stringify(nestedObjectVariable.foo.bar.baz)}`
 // Nested object embedded, failure
-sql`SELECT * FROM workspaces WHERE id = ${JSON.stringify(nestedObjectVariable.foo.bar.baz)}`
+sql`SELECT * FROM workspaces WHERE id = ${nestedObjectVariable.foo.bar.baz}`
 
 /**
  * Variable date.

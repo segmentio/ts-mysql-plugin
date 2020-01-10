@@ -174,7 +174,7 @@ func TestGetTables(t *testing.T) {
 					TableColumn{
 						Name: "features",
 						InType: "expression",
-						TsType: "object",
+						TsType: "string",
 						Value: "{}",
 						Operator: "=",
 					},
