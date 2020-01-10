@@ -17,7 +17,7 @@ import getWordAtOffset from './lib/get-word-at-offset'
 import { parseUri } from 'mysql-parse'
 import autocorrect from './lib/autocorrect'
 import Analyzer from './analyzer'
-import Logger from './Logger'
+import Logger from './logger'
 import Schema, { Tables, Table, Columns, Column } from './schema'
 import { pluginName } from './config'
 

@@ -1,7 +1,13 @@
 import ts from 'typescript/lib/tsserverlibrary'
 
-export default function getSpans(node: ts.TemplateExpression) {
-  const spans: Array<{ start: number; end: number; expression: ts.Expression }> = []
+interface Span {
+  expression: ts.Expression
+  start: number
+  end: number
+}
+
+export default function getSpans(node: ts.TemplateExpression): Span[] {
+  const spans = []
   const stringStart = node.getStart() + 1
 
   let nodeStart = node.head.end - stringStart - 2

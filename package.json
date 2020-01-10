@@ -11,6 +11,7 @@
   "main": "src/index.js",
   "scripts": {
     "test": "jest e2e/tests --testTimeout 10000",
+    "lint": "eslint src/**/*.ts",
     "build-go": "ts-node scripts/build-go.ts",
     "build-ts": "tsc",
     "build": "yarn build-ts && yarn build-go",
