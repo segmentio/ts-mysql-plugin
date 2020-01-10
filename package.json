@@ -13,10 +13,7 @@
     "mysql",
     "sql"
   ],
-  "files": [
-    "dist"
-  ],
-  "main": "src/index.js",
+  "main": "dist/index.js",
   "scripts": {
     "pub": "np",
     "test": "jest e2e/tests --testTimeout 10000",

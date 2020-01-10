@@ -748,8 +748,8 @@ tough-cookie@~2.4.3:
     psl "^1.1.24"
     punycode "^1.4.1"
 
-"ts-mysql-plugin@file:../dist":
-  version "0.0.1"
+"ts-mysql-plugin@file:./..":
+  version "0.1.0"
   dependencies:
     cross-spawn "^7.0.1"
     leven "^3.1.0"
