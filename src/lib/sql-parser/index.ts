@@ -45,7 +45,7 @@ export interface ParseResult {
 
 export function parse(query: string): ParseResult {
   const binaryTarget = path.resolve(__dirname, `../../sql-parser-${process.platform}`)
-  const program = spawn.sync(binaryTarget, ['--query', query, 'parse'])
+  const program = spawn.sync(binaryTarget, ['--query', query.trim(), 'parse'])
   const result = program.stdout.toString()
   return JSON.parse(result)
 }
