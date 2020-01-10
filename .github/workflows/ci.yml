@@ -51,4 +51,10 @@ jobs:
         run: yarn lint
 
       - name: Run tests
-        run: cd e2e && yarn install && cd .. && yarn test
+        run: |
+          cd e2e
+          yarn install
+          docker-compose up -d
+          yarn wait-port 'localhost:3010' --timeout 30000 --wait-for-dns
+          cd ..
+          yarn test

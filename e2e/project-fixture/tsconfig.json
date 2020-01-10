@@ -4,7 +4,8 @@
     "module": "commonjs",
     "plugins": [
       {
-        "name": "ts-mysql-plugin"
+        "name": "ts-mysql-plugin",
+        "databaseUri": "mysql://root@localhost:3010/test"
       }
     ]
   }

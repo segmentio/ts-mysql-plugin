@@ -10,4 +10,12 @@ describe('Completions', () => {
     expect(completions.some((item: CompletionEntry) => item.name === 'JOIN')).toBeTruthy()
     expect(completions.some((item: CompletionEntry) => item.name === 'FROM')).toBeTruthy()
   })
+
+  // it('returns schema table completions', async () => {
+  //   const completions = await complete('sql`SELECT * FROM user`', {
+  //     offset: 22,
+  //     line: 1
+  //   })
+  //   expect(completions.some((item: CompletionEntry) => item.name === 'users')).toBeTruthy()
+  // })
 })

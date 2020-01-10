@@ -1,7 +1,0 @@
-{
-  "devDependencies": {
-    "prettier": "^1.19.1",
-    "sql-template-strings": "^2.2.2",
-    "ts-mysql-plugin": "file:./../dist"
-  }
-}

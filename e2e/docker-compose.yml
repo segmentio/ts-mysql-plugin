@@ -1,0 +1,17 @@
+version: '2.1'
+
+volumes:
+  mysql_test_data:
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
+
+services:
+  mysql:
+    image: mysql:5.7
+    ports:
+      - '3010:3306'
+    volumes:
+      - ./seed/:/docker-entrypoint-initdb.d/:ro
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'true'

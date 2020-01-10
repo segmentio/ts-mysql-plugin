@@ -1,6 +1,7 @@
 import sqlTypeToTsType from './lib/sql-type-to-ts-type'
 import { Connection, createConnection, QueryError } from 'mysql2'
 import { SqlDataType } from './constants/data-types'
+import Logger from './logger'
 
 export type Tables = Table[]
 export type Columns = Column[]
@@ -20,23 +21,29 @@ export interface Column {
 interface SchemaOptions {
   readonly databaseName: string
   readonly databaseUri: string
+  readonly logger: Logger
 }
 
 export default class Schema {
   private readonly connection?: Connection
   private readonly databaseName?: string
+  private readonly logger: Logger
   public tables: Tables = []
 
-  public constructor({ databaseName, databaseUri }: SchemaOptions) {
+  public constructor({ databaseName, databaseUri, logger }: SchemaOptions) {
+    this.logger = logger
+
     if (!databaseUri) {
       return
     }
+
     this.databaseName = databaseName
     this.connection = createConnection({ uri: databaseUri })
     this.start()
   }
 
   private start(): void {
+    this.logger.log('Started getting schema...')
     // do not block other plugin features while loading schema
     this.queryTables()
       .then(tables => {

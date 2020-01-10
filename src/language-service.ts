@@ -81,7 +81,7 @@ export default class MySqlLanguageService implements TemplateLanguageService {
       try {
         const { database: databaseName } = parseUri(databaseUri)
         this.databaseName = databaseName
-        this.schema = new Schema({ databaseName, databaseUri })
+        this.schema = new Schema({ databaseName, databaseUri, logger })
       } catch (e) {
         this.logger.log('Failed to parse provided database URI: ' + e)
       }

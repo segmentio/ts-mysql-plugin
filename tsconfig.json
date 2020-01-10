@@ -19,5 +19,5 @@
     }
   },
   "include": ["**/*.ts", "package.json"],
-  "exclude": ["node_modules", "dist", "scripts", "example-project", "e2e"]
+  "exclude": ["node_modules", "dist", "scripts", "e2e"]
 }

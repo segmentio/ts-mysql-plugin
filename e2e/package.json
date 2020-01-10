@@ -1,7 +1,9 @@
 {
-  "dependencies": {
+  "devDependencies": {
+    "delay": "^4.3.0",
     "sql-template-strings": "^2.2.2",
     "ts-mysql-plugin": "file:./../dist",
-    "typescript": "^3.1.6"
+    "typescript": "^3.1.6",
+    "wait-port": "^0.2.7"
   }
 }

@@ -3,10 +3,17 @@ import readline from 'readline'
 import execa from 'execa'
 import path from 'path'
 
+const showLogs = false
 const root = path.join(__dirname, '..')
 const serverPath = path.join(root, 'node_modules', 'typescript', 'lib', 'tsserver')
 const projectPath = path.join(root, 'project-fixture')
 const fileName = path.join(projectPath, 'main.ts')
+const serverOptions: string[] = []
+
+if (showLogs) {
+  const logfile = path.join(__dirname, 'log.txt')
+  serverOptions.push('--logVerbosity', 'verbose', '--logFile', logfile)
+}
 
 interface CommandRequest {
   name: string
@@ -27,7 +34,7 @@ export default class Server {
   sequences = 0
 
   public constructor() {
-    this.server = execa.node(serverPath, [], { cwd: projectPath })
+    this.server = execa.node(serverPath, serverOptions, { cwd: projectPath })
 
     const reader = readline.createInterface({
       input: this.server.stdout!

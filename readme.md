@@ -53,26 +53,24 @@ You can also optionally override the default tags ("SQL" and "sql") by adding a 
 
 ## Developing
 
-Prerequisite: Go is required in order to build the binary for the MySQL parser.
-
 Run the following:
 
 ```shell
-go get
-yarn install && yarn build
-cd example-project && yarn install && code .
-cd .. && yarn watch
+go get ./src/lib/sql-parser
+yarn install
+yarn build
 ```
-
-Your editor should now be open with the `example-project` directory at the root. Open `src/index.ts` and you should see diagnostics errors.
 
 ## Testing
 
 Assuming you've run all the steps in the "Development" section, then run the following:
 
 ```shell
-cd e2e && yarn install
-cd .. && yarn test
+cd e2e
+yarn install
+docker-compose up -d
+cd ..
+yarn test
 ```
 
 ## Publishing
