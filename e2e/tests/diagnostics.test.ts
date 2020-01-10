@@ -2,7 +2,7 @@ import { diagnostics } from '../lib/editor'
 import { Diagnostic } from 'typescript/lib/tsserverlibrary'
 
 describe('Diagnostics', () => {
-  it('returns SQL keyword completions', async () => {
+  it('returns diagnostic for empty query', async () => {
     const [error] = await send('sql``')
     expect(error).toMatchObject({
       start: { line: 2, offset: 5 },
@@ -14,7 +14,7 @@ describe('Diagnostics', () => {
     })
   })
 
-  it('returns SQL keyword completions', async () => {
+  it('returns diagnostic for invalid keyword', async () => {
     const [error] = await send('sql`SELEC`')
     expect(error).toMatchObject({
       start: { line: 2, offset: 6 },
