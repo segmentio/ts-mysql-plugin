@@ -9,12 +9,13 @@ A typescript language service plugin that gives superpowers to SQL tagged templa
 ## Features
 
 - Autocomplete for MySQL keywords
-- Autocomplete for table names and column names (if a local database URI is provided)
+- Autocomplete for table names and column names (powered by your schema)
 - Hover documentation for MySQL keywords
-- Hover documentation for tables and columns (if a local database URI is provided)
+- Hover documentation for tables and columns (powered by your schema)
 - Diagnostics for MySQL syntax errors
-- Diagnostics for invalid table names and column names (if a local database URI is provided)
-- Diagnostics for invalid column types (if a local database URI is provided)
+- Diagnostics for invalid table names and column names (powered by your schema)
+- Diagnostics for invalid column types (powered by your schema)
+- Works in all major editors (VSCode, Sublime Text, Atom, etc.)
 
 ## Installing
 
