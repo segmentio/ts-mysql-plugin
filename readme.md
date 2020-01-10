@@ -57,11 +57,11 @@ Run the following:
 ```shell
 go get
 yarn install && yarn build
-cd example-project && yarn install
+cd example-project && yarn install && code .
 cd .. && yarn watch
 ```
 
-Navigate to `example-project/tsconfig.json` and change the plugin path name for your setup. Navigate to `example-project/src/index.ts` and you should see errors in the `invalid queries` section.
+Your editor should now be open with the `example-project` directory at the root. Open `src/index.ts` and you should see diagnostics errors.
 
 ## Tests
 
