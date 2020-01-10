@@ -13,6 +13,14 @@ interface CommandRequest {
   arguments: any
 }
 
+interface CommandRequestArguments {
+  file: string
+  line?: number
+  offset?: number
+  fileContent?: string
+  scriptKindName?: string
+}
+
 export default class Server {
   server: execa.ExecaChildProcess
   responses: any[] = []
@@ -43,13 +51,15 @@ export default class Server {
       }
     })
 
+    const args: CommandRequestArguments = { file: fileName }
+    if (location) {
+      args.offset = location.offset
+      args.line = location.line
+    }
+
     this.send({
       name: command,
-      arguments: {
-        file: fileName,
-        line: location.line,
-        offset: location.offset
-      }
+      arguments: args
     })
 
     this.server.stdin?.end()

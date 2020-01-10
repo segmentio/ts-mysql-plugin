@@ -1,6 +1,7 @@
 {
   "dependencies": {
-    "typescript": "^3.1.6",
-    "ts-mysql-plugin": "file:./../dist"
+    "sql-template-strings": "^2.2.2",
+    "ts-mysql-plugin": "file:./../dist",
+    "typescript": "^3.1.6"
   }
 }

@@ -1,5 +1,5 @@
 import Server from './server'
-import { QuickInfo, CompletionEntry } from 'typescript/lib/tsserverlibrary'
+import { QuickInfo, CompletionEntry, Diagnostic } from 'typescript/lib/tsserverlibrary'
 
 interface Location {
   offset: number
@@ -7,7 +7,7 @@ interface Location {
 }
 
 export interface RequestData {
-  location: Location
+  location?: Location
   command: string
   body: string
 }
@@ -34,6 +34,13 @@ export function complete(body: string, location: Location): Promise<CompletionEn
   return request<CompletionEntry[]>({
     command: 'completions',
     location,
+    body
+  })
+}
+
+export function diagnostics(body: string): Promise<Diagnostic[]> {
+  return request<Diagnostic[]>({
+    command: 'semanticDiagnosticsSync',
     body
   })
 }
