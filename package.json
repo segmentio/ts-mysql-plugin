@@ -1,15 +1,21 @@
 {
   "name": "ts-mysql-plugin",
-  "description": "A typescript language service plugin that gives superpowers to SQL tagged template literals. Specifically aimed at the MySQL syntax.",
-  "contributors": [
-    "Steven Miller (https://github.com/stevenmiller888)"
-  ],
-  "repository": "segmentio/ts-mysql-plugin",
-  "publisher": "segmentio",
-  "license": "MIT",
   "version": "0.0.1",
+  "description": "A typescript language service plugin that gives superpowers to SQL tagged template literals. Specifically aimed at the MySQL syntax.",
+  "license": "MIT",
+  "repository": "segmentio/ts-mysql-plugin",
+  "author": "Steven Miller (https://github.com/stevenmiller888)",
+  "keywords": [
+    "typescript",
+    "extension",
+    "vscode",
+    "plugin",
+    "mysql",
+    "sql"
+  ],
   "main": "src/index.js",
   "scripts": {
+    "pub": "np",
     "test": "jest e2e/tests --testTimeout 10000",
     "lint": "eslint src/**/*.ts",
     "build-go": "ts-node scripts/build-go.ts",
@@ -59,6 +65,7 @@
     "husky": "^4.0.4",
     "jest": "^24.9.0",
     "lint-staged": "^9.5.0",
+    "np": "^5.2.1",
     "prettier": "^1.19.1",
     "ts-jest": "^24.3.0",
     "ts-node": "^8.5.4"

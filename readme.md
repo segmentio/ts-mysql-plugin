@@ -1,4 +1,4 @@
-# ts-mysql-plugin (Alpha)
+# ts-mysql-plugin (Beta)
 
 ![Alt Text](https://github.com/segmentio/ts-mysql-plugin/workflows/CI/badge.svg)
 
@@ -51,7 +51,7 @@ You can also optionally override the default tags ("SQL" and "sql") by adding a 
 }
 ```
 
-## Development
+## Developing
 
 Prerequisite: Go is required in order to build the binary for the MySQL parser.
 
@@ -66,13 +66,21 @@ cd .. && yarn watch
 
 Your editor should now be open with the `example-project` directory at the root. Open `src/index.ts` and you should see diagnostics errors.
 
-## Tests
+## Testing
 
 Assuming you've run all the steps in the "Development" section, then run the following:
 
 ```shell
 cd e2e && yarn install
 cd .. && yarn test
+```
+
+## Publishing
+
+We use [`np`](https://github.com/sindresorhus/np) to cut and publish new releases. Run the following:
+
+```shell
+yarn run pub
 ```
 
 ## License
