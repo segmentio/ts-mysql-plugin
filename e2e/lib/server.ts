@@ -10,7 +10,7 @@ const fileName = path.join(projectPath, 'main.ts')
 
 interface CommandRequest {
   name: string
-  arguments: any
+  arguments: CommandRequestArguments
 }
 
 interface CommandRequestArguments {

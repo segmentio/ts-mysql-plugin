@@ -17,9 +17,9 @@ import getWordAtOffset from './lib/get-word-at-offset'
 import { parseUri } from 'mysql-parse'
 import autocorrect from './lib/autocorrect'
 import Analyzer from './analyzer'
+import { Configuration } from './configuration'
 import Logger from './logger'
 import Schema, { Tables, Table, Columns, Column } from './schema'
-import { pluginName } from './config'
 
 interface CreateDiagnosticInput {
   category: DiagnosticCategory
@@ -60,7 +60,7 @@ function createRow(column: Column): string[] {
 }
 
 interface MySqlLanguageServiceOptions {
-  databaseUri: string
+  config: Configuration
   logger: Logger
 }
 
@@ -69,11 +69,14 @@ export default class MySqlLanguageService implements TemplateLanguageService {
   private readonly logger: Logger
   private readonly databaseName?: string
   private readonly schema?: Schema
+  private readonly config: Configuration
 
-  public constructor({ databaseUri, logger }: MySqlLanguageServiceOptions) {
+  public constructor({ logger, config }: MySqlLanguageServiceOptions) {
     this.logger = logger
     this.analyzer = new Analyzer(logger)
+    this.config = config
 
+    const { databaseUri } = config
     if (databaseUri) {
       try {
         const { database: databaseName } = parseUri(databaseUri)
@@ -88,7 +91,7 @@ export default class MySqlLanguageService implements TemplateLanguageService {
   private createDiagnostic(context: TemplateContext, input: CreateDiagnosticInput): Diagnostic {
     return {
       file: context.node.getSourceFile(),
-      source: pluginName,
+      source: this.config.pluginName,
       messageText: input.message,
       category: input.category,
       length: input.length,
