@@ -26,6 +26,26 @@ describe('Diagnostics', () => {
     `)
   })
 
+  it(`returns correct diagnostic for query: ${'sql`       `'}`, async () => {
+    const [error] = await send('sql``')
+    expect(error).toMatchInlineSnapshot(`
+      Object {
+        "category": "error",
+        "code": 1001,
+        "end": Object {
+          "line": 2,
+          "offset": 7,
+        },
+        "source": "ts-mysql-plugin",
+        "start": Object {
+          "line": 2,
+          "offset": 5,
+        },
+        "text": "Empty MySQL query.",
+      }
+    `)
+  })
+
   // it(`returns correct diagnostic for query: ${'sql`SELEC`'}`, async () => {
   //   const [error] = await send('sql`SELEC`')
   //   expect(error).toMatchInlineSnapshot(`
