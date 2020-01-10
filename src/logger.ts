@@ -9,7 +9,7 @@ export default class implements Logger {
     this.project = project
   }
 
-  public log(msg: string) {
+  public log(msg: string): void {
     this.project.projectService.logger.info(`[${pluginName}] ${msg}`)
   }
 }

@@ -4,7 +4,8 @@ import {
 } from 'typescript-template-language-service-decorator'
 import ts from 'typescript/lib/tsserverlibrary'
 import MySqlLanguageService from './language-service'
-const { InTypeAlias, NoTruncation } = ts.TypeFormatFlags
+import getValueFromExpression from './lib/get-value-from-expression'
+import getSpans from './lib/get-spans'
 import Logger from './logger'
 
 type TsType = typeof ts
@@ -25,11 +26,8 @@ class MySqlPlugin {
       tags,
       enableForStringWithSubstitutions: true,
       getSubstitutions: (contents: string, _, node: ts.TemplateExpression) => {
-        const checker = info.project
-          .getLanguageService()
-          .getProgram()
-          ?.getTypeChecker()!
-
+        const program = info.project.getLanguageService().getProgram()
+        const checker = program?.getTypeChecker()
         const spans = getSpans(node)
         const parts: string[] = []
         let lastIndex = 0
@@ -37,8 +35,15 @@ class MySqlPlugin {
         for (const span of spans) {
           parts.push(contents.slice(lastIndex, span.start))
           const expression = span.expression
-          const value = getValueFromExpression(expression, checker, logger)
-          parts.push(value)
+
+          if (checker) {
+            const value = getValueFromExpression(expression, checker, logger)
+            parts.push(value)
+          } else {
+            const value = 'x'.repeat(span.end - span.start - 2)
+            parts.push(`'${value}'`)
+          }
+
           lastIndex = span.end
         }
 
@@ -61,56 +66,6 @@ class MySqlPlugin {
   }
 }
 
-export = (modules: { typescript: TsType }) => new MySqlPlugin(modules.typescript)
-
-function getSpans(node: ts.TemplateExpression) {
-  const spans: Array<{ start: number; end: number; expression: ts.Expression }> = []
-  const stringStart = node.getStart() + 1
-
-  let nodeStart = node.head.end - stringStart - 2
-  for (const templateSpan of node.templateSpans) {
-    const literal = templateSpan.literal
-    const start = literal.getStart() - stringStart + 1
-    const expression = templateSpan.expression
-    spans.push({ start: nodeStart, end: start, expression })
-    nodeStart = literal.getEnd() - stringStart - 2
-  }
-
-  return spans
-}
-
-function getValueFromExpression(expression: ts.Expression, checker: ts.TypeChecker, logger: Logger): any {
-  const locationType = checker.getTypeAtLocation(expression)
-  const apparentType = checker.getApparentType(locationType)
-  const value = checker.typeToString(locationType, expression, InTypeAlias | NoTruncation)
-  const type = checker.typeToString(apparentType, expression, InTypeAlias | NoTruncation)
-
-  logger.log('getValueFromExpression - raw: ' + expression.getText())
-  logger.log('getValueFromExpression - type: ' + type)
-  logger.log('getValueFromExpression - value: ' + value)
-
-  switch (type) {
-    case 'null':
-      return value
-    case 'String':
-      // TODO: explain why this is needed.
-      if (value === 'string') {
-        return "'string'"
-      }
-      return value
-    case 'Number':
-      // TODO: explain why this is needed.
-      if (value === 'number') {
-        return '12345'
-      }
-      return value
-    case 'Boolean':
-      // TODO: explain why this is needed.
-      if (value === 'boolean') {
-        return 'true'
-      }
-      return value
-    case 'Date':
-      return `"${new Date().toISOString()}"`
-  }
+export = (modules: { typescript: TsType }): MySqlPlugin => {
+  return new MySqlPlugin(modules.typescript)
 }

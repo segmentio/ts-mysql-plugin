@@ -69,7 +69,7 @@ Assuming you've run all the steps in the "Development" section, then run the fol
 
 ```shell
 cd e2e && yarn install
-cd .. && yarn run e2e
+cd .. && yarn test
 ```
 
 ## Note

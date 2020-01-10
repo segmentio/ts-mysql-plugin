@@ -170,7 +170,7 @@ export default class Analyzer {
     })
   }
 
-  private analyzeColumnType(context: TemplateContext, queryColumn: QueryColumn, schemaColumn: SchemaColumn) {
+  private analyzeColumnType(context: TemplateContext, queryColumn: QueryColumn, schemaColumn: SchemaColumn): void {
     const { name: columnName, operator, value, tsType, inType } = queryColumn
 
     if (!tsType || !inType) {
@@ -193,7 +193,7 @@ export default class Analyzer {
     // expression: version = 1, columnName: version, operator: =, value: 1
     // also matches against embedded expressions e.g. SELECT id from workspaces WHERE version = ${someVersion}
     if (inType === 'expression') {
-      pattern = new RegExp(`\`{0,1}${columnName}\`{0,1}\\s*${operator}\\s*(['"]+.+['"]+)?([\$\{]+[\\S]+}+)?`)
+      pattern = new RegExp(`\`{0,1}${columnName}\`{0,1}\\s*${operator}\\s*(['"]+.+['"]+)?([$\{]+[\\S]+}+)?`)
     } else if (inType === 'list') {
       // e.g. `INSERT INTO workspaces (id) VALUES (1) => 1 is the value
       pattern = new RegExp(value)
@@ -206,7 +206,7 @@ export default class Analyzer {
 
     // match against raw text because it contains the string with the variable name,
     // which means it will work with embedded expressions
-    const match = context.rawText.match(pattern)
+    const match = pattern.exec(context.rawText)
     if (!match) {
       return
     }

@@ -13,6 +13,7 @@ export interface Table {
 export interface TableColumn {
   name: string
   inType: string // "expression" or "list"?
+  // eslint-disable-next-line
   value?: any
   tsType?: string
   operator?: string
@@ -32,6 +33,7 @@ export interface Statement {
   tables: Tables
   /* The SQL abstract syntax tree */
   tree: {
+    // eslint-disable-next-line
     [name: string]: any
   }
 }

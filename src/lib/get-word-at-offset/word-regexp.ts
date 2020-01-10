@@ -7,10 +7,10 @@ const USUAL_WORD_SEPARATORS = '`~!@#$%^&*()-=+[{]}\\|;:\'",.<>/?'
  * The default would look like this:
  * /(-?\d*\.\d\w*)|([^\`\~\!\@\#\$\%\^\&\*\(\)\-\=\+\[\{\]\}\\\|\;\:\'\"\,\.\<\>\/\?\s]+)/g
  */
-function createWordRegExp(allowInWords: string = ''): RegExp {
+function createWordRegExp(allowInWords = ''): RegExp {
   let source = '(-?\\d*\\.\\d\\w*)|([^'
   for (const sep of USUAL_WORD_SEPARATORS) {
-    if (allowInWords.indexOf(sep) >= 0) {
+    if (allowInWords.includes(sep)) {
       continue
     }
     source += '\\' + sep
