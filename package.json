@@ -13,6 +13,9 @@
     "mysql",
     "sql"
   ],
+  "files": [
+    "dist"
+  ],
   "main": "dist/index.js",
   "scripts": {
     "pub": "np",
