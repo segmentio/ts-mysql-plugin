@@ -1,5 +1,7 @@
 # ts-mysql-plugin (Alpha)
 
+![Alt Text](https://github.com/segmentio/ts-mysql-plugin/workflows/ci/badge.svg)
+
 A typescript language service plugin that gives superpowers to SQL tagged template literals. Specifically aimed at the MySQL syntax.
 
 ![Alt Text](https://github.com/segmentio/ts-mysql-plugin/raw/master/.github/demo.gif)
@@ -72,8 +74,6 @@ cd e2e && yarn install
 cd .. && yarn test
 ```
 
-## Note
+## License
 
-TLDR; If anyone knows of a MySQL parser that can track node position, please let me know.
-
-I can't find a MySQL parser with the ability to track node position. All the features in this plugin work around that problem. For example, when a user is hovering over a word, instead of finding the AST node corresponding to that word, we check all possibilities (e.g. is this a table name? is this a column name? is this a keyword?). Having the node itself would make this plugin far more accurate.
+[MIT](https://tldrlegal.com/license/mit-license)
