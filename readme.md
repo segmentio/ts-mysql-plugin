@@ -1,6 +1,6 @@
 # ts-mysql-plugin (Alpha)
 
-![Alt Text](https://github.com/segmentio/ts-mysql-plugin/workflows/ci/badge.svg)
+![Alt Text](https://github.com/segmentio/ts-mysql-plugin/workflows/CI/badge.svg)
 
 A typescript language service plugin that gives superpowers to SQL tagged template literals. Specifically aimed at the MySQL syntax.
 
