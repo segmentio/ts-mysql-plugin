@@ -18,7 +18,7 @@ import { parseUri } from 'mysql-parse'
 import autocorrect from './lib/autocorrect'
 import Analyzer from './analyzer'
 import Logger from './Logger'
-import Schema, { Table, Columns, Column } from './schema'
+import Schema, { Tables, Table, Columns, Column } from './schema'
 import { pluginName } from './config'
 
 interface CreateDiagnosticInput {
@@ -27,6 +27,13 @@ interface CreateDiagnosticInput {
   length: number
   start: number
   code: number
+}
+
+interface CreateQuickInfoInput {
+  header?: SymbolDisplayPart[]
+  docs?: SymbolDisplayPart[]
+  startOffset: number
+  wordAtHover: string
 }
 
 const MAX_LENGTH = 30
@@ -59,16 +66,23 @@ interface MySqlLanguageServiceOptions {
 
 export default class MySqlLanguageService implements TemplateLanguageService {
   private readonly analyzer: Analyzer
-  private readonly schema: Schema
-  private readonly databaseName: string
   private readonly logger: Logger
+  private readonly databaseName?: string
+  private readonly schema?: Schema
 
   public constructor({ databaseUri, logger }: MySqlLanguageServiceOptions) {
     this.logger = logger
     this.analyzer = new Analyzer(logger)
-    const { database: databaseName } = parseUri(databaseUri)
-    this.databaseName = databaseName
-    this.schema = new Schema({ databaseName, databaseUri })
+
+    if (databaseUri) {
+      try {
+        const { database: databaseName } = parseUri(databaseUri)
+        this.databaseName = databaseName
+        this.schema = new Schema({ databaseName, databaseUri })
+      } catch (e) {
+        this.logger.log('Failed to parse provided database URI: ' + e)
+      }
+    }
   }
 
   private createDiagnostic(context: TemplateContext, input: CreateDiagnosticInput): Diagnostic {
@@ -80,6 +94,20 @@ export default class MySqlLanguageService implements TemplateLanguageService {
       length: input.length,
       start: input.start,
       code: input.code
+    }
+  }
+
+  private createQuickInfo(input: CreateQuickInfoInput): QuickInfo {
+    return {
+      kind: ScriptElementKind.string,
+      kindModifiers: '',
+      textSpan: {
+        start: input.startOffset,
+        length: input.wordAtHover.length
+      },
+      displayParts: input.header,
+      documentation: input.docs,
+      tags: []
     }
   }
 
@@ -101,13 +129,17 @@ export default class MySqlLanguageService implements TemplateLanguageService {
     }
 
     const result = this.analyzer.getParseResult(context.text)
-    if (!result || !result.statements) {
-      return
+    if (!result || !result.statements || !this.schema) {
+      return this.createQuickInfo({
+        startOffset,
+        wordAtHover,
+        header,
+        docs
+      })
     }
 
     const pad = padding(5)
     const tableHeader = ['Name', pad, 'SQL Type', pad, 'TS Type', pad, 'Optional']
-
     const schemaTables = this.schema.getTables()
 
     result.statements.forEach(statement => {
@@ -138,17 +170,12 @@ export default class MySqlLanguageService implements TemplateLanguageService {
       }
     })
 
-    return {
-      kind: ScriptElementKind.string,
-      kindModifiers: '',
-      textSpan: {
-        start: startOffset,
-        length: wordAtHover.length
-      },
-      displayParts: header,
-      documentation: docs,
-      tags: []
-    }
+    return this.createQuickInfo({
+      startOffset,
+      wordAtHover,
+      header,
+      docs
+    })
   }
 
   public getCompletionsAtPosition(context: TemplateContext): CompletionInfo {
@@ -162,6 +189,15 @@ export default class MySqlLanguageService implements TemplateLanguageService {
         }
       }
     )
+
+    if (!this.schema) {
+      return {
+        entries: keywordEntries,
+        isNewIdentifierLocation: false,
+        isGlobalCompletion: false,
+        isMemberCompletion: false
+      }
+    }
 
     const schemaTables = this.schema.getTables()
     const tableEntries = schemaTables.map(
@@ -213,7 +249,11 @@ export default class MySqlLanguageService implements TemplateLanguageService {
   public getSemanticDiagnostics(context: TemplateContext): Diagnostic[] {
     this.logger.log('getSemanticDiagnostics: ')
 
-    const tables = this.schema.getTables()
+    let tables: Tables = []
+    if (this.schema) {
+      tables = this.schema.getTables()
+    }
+
     const query = context.text
     const diagnostics: Diagnostic[] = []
 

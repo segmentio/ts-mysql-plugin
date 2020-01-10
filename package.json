@@ -10,6 +10,7 @@
   "version": "0.0.1",
   "main": "src/index.js",
   "scripts": {
+    "e2e": "jest e2e/tests --testTimeout 2000",
     "build-go": "ts-node scripts/build-go.ts",
     "build-ts": "tsc",
     "build": "yarn build-ts && yarn build-go",
@@ -21,13 +22,22 @@
     "singleQuote": true,
     "printWidth": 120
   },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node"
+  },
   "devDependencies": {
     "@types/cross-spawn": "^6.0.1",
+    "@types/jest": "^24.0.25",
     "@types/mysql2": "types/mysql2",
-    "@types/node": "^13.1.2",
+    "@types/node": "^13.1.6",
     "@types/prettier": "^1.19.0",
+    "chai": "^4.2.0",
     "execa": "^4.0.0",
+    "glob": "^7.1.6",
+    "jest": "^24.9.0",
     "prettier": "^1.19.1",
+    "ts-jest": "^24.3.0",
     "ts-node": "^8.5.4"
   },
   "dependencies": {

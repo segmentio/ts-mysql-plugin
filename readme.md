@@ -63,10 +63,18 @@ cd .. && yarn watch
 
 Navigate to `example-project/tsconfig.json` and change the plugin path name for your setup. Navigate to `example-project/src/index.ts` and you should see errors in the `invalid queries` section.
 
+## Tests
+
+Assuming you've run all the steps in the "Development" section, then run the following:
+
+```shell
+cd e2e && yarn install
+cd .. && yarn run e2e
+```
+
 ## Todos
 
 - [ ] E2E tests
-- [ ] Figure out how to use relative path in example-project/tsconfig.json
 - [ ] Finish all keyword documentation.
 
 ## Note

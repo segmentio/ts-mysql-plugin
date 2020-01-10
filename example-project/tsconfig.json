@@ -4,7 +4,7 @@
     "target": "es2019",
     "plugins": [
       {
-        "name": "/Users/steven.miller/dev/src/github.com/segmentio/ts-mysql-plugin/dist",
+        "name": "ts-mysql-plugin",
         "databaseUri": "mysql://root@127.0.0.1/ctlplane"
       }
     ]
