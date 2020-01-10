@@ -72,11 +72,6 @@ cd e2e && yarn install
 cd .. && yarn run e2e
 ```
 
-## Todos
-
-- [ ] E2E tests
-- [ ] Finish all keyword documentation.
-
 ## Note
 
 TLDR; If anyone knows of a MySQL parser that can track node position, please let me know.
