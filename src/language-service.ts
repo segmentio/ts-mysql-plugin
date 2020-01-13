@@ -141,7 +141,25 @@ export default class MySqlLanguageService implements TemplateLanguageService {
     }
   }
 
+  private hasFileIgnoreComment(context: TemplateContext): boolean {
+    const contents = this.host.readFile(context.fileName)
+    if (!contents) {
+      return false
+    }
+
+    const firstLine = contents.split('\n')[0]
+    if (firstLine.includes('@ts-mysql-plugin ignore')) {
+      return true
+    }
+
+    return false
+  }
+
   public getQuickInfoAtPosition(context: TemplateContext, position: LineAndCharacter): QuickInfo | undefined {
+    if (this.hasFileIgnoreComment(context)) {
+      return
+    }
+
     const offset = context.toOffset(position)
     const wordWithOffset = getWordAtOffset(offset, context.text)
     if (!wordWithOffset) {
@@ -226,6 +244,15 @@ export default class MySqlLanguageService implements TemplateLanguageService {
   }
 
   public getCompletionsAtPosition(context: TemplateContext): CompletionInfo {
+    if (this.hasFileIgnoreComment(context)) {
+      return {
+        entries: [],
+        isNewIdentifierLocation: false,
+        isGlobalCompletion: false,
+        isMemberCompletion: false
+      }
+    }
+
     const keywordEntries: CompletionEntry[] = keywords.map(
       (keyword: string): CompletionEntry => {
         return {
@@ -294,14 +321,18 @@ export default class MySqlLanguageService implements TemplateLanguageService {
   }
 
   public getSemanticDiagnostics(context: TemplateContext): Diagnostic[] {
-    this.logger.log('getSemanticDiagnostics: ')
+    this.logger.log('getSemanticDiagnostics')
+
+    const diagnostics: Diagnostic[] = []
+
+    if (this.hasFileIgnoreComment(context)) {
+      return diagnostics
+    }
 
     let tables: Tables = []
     if (this.schema) {
       tables = this.schema.getTables()
     }
-
-    const diagnostics: Diagnostic[] = []
 
     try {
       this.analyzer.analyze(context, tables)
