@@ -51,6 +51,8 @@ You can also optionally override the default tags ("SQL" and "sql") by adding a 
 }
 ```
 
+If you add `@ts-mysql-plugin ignore` in a comment at the top of a file, then the plugin will skip the file.
+
 ## Developing
 
 Run the following:
