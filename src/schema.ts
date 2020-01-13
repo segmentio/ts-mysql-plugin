@@ -2,6 +2,7 @@ import sqlTypeToTsType from './lib/sql-type-to-ts-type'
 import { Connection, createConnection, QueryError } from 'mysql2'
 import { SqlDataType } from './constants/data-types'
 import Logger from './logger'
+import { EventEmitter } from 'events'
 
 export type Tables = Table[]
 export type Columns = Column[]
@@ -24,13 +25,15 @@ interface SchemaOptions {
   readonly logger: Logger
 }
 
-export default class Schema {
+export default class Schema extends EventEmitter {
   private readonly connection?: Connection
   private readonly databaseName?: string
   private readonly logger: Logger
   public tables: Tables = []
 
   public constructor({ databaseName, databaseUri, logger }: SchemaOptions) {
+    super()
+
     this.logger = logger
 
     if (!databaseUri) {
@@ -48,6 +51,7 @@ export default class Schema {
     this.queryTables()
       .then(tables => {
         this.tables = tables
+        this.emit('schemaLoaded')
       })
       .catch(error => {
         if (error) {

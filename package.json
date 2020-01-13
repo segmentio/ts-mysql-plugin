@@ -19,7 +19,9 @@
   "main": "dist/index.js",
   "scripts": {
     "pub": "np",
-    "test": "jest e2e/tests --testTimeout 10000",
+    "test-go": "go test -race ./src/lib/sql-parser -count=1",
+    "test-ts": "jest e2e/tests --forceExit --runInBand",
+    "test": "yarn test-ts && yarn test-go",
     "lint": "eslint src/**/*.ts",
     "build-go": "ts-node scripts/build-go.ts",
     "build-ts": "tsc",

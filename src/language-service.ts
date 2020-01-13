@@ -1,5 +1,6 @@
 import { TemplateLanguageService, TemplateContext } from 'typescript-template-language-service-decorator'
 import generateDocumentation from './lib/documentation/generate'
+import { server } from 'typescript/lib/tsserverlibrary'
 import {
   SymbolDisplayPart,
   ScriptElementKind,
@@ -36,6 +37,11 @@ interface CreateQuickInfoInput {
   wordAtHover: string
 }
 
+interface ResponseMessage {
+  type: string
+  event: string
+}
+
 const MAX_LENGTH = 30
 
 function truncate(str: string): string {
@@ -60,21 +66,24 @@ function createRow(column: Column): string[] {
 }
 
 interface MySqlLanguageServiceOptions {
+  host: server.ServerHost
   config: Configuration
   logger: Logger
 }
 
 export default class MySqlLanguageService implements TemplateLanguageService {
+  private readonly host: server.ServerHost
   private readonly analyzer: Analyzer
   private readonly logger: Logger
   private readonly databaseName?: string
   private readonly schema?: Schema
   private readonly config: Configuration
 
-  public constructor({ logger, config }: MySqlLanguageServiceOptions) {
-    this.logger = logger
+  public constructor({ host, logger, config }: MySqlLanguageServiceOptions) {
     this.analyzer = new Analyzer(logger)
     this.config = config
+    this.logger = logger
+    this.host = host
 
     const { databaseUri } = config
     if (databaseUri) {
@@ -82,10 +91,28 @@ export default class MySqlLanguageService implements TemplateLanguageService {
         const { database: databaseName } = parseUri(databaseUri)
         this.databaseName = databaseName
         this.schema = new Schema({ databaseName, databaseUri, logger })
+        this.schema.on('schemaLoaded', this.onSchemaLoaded.bind(this))
       } catch (e) {
         this.logger.log('Failed to parse provided database URI: ' + e)
       }
     }
+  }
+
+  // Send `schemaLoadingFinish` to client for testing purposes.
+  private onSchemaLoaded(): void {
+    const message = {
+      type: 'event',
+      event: 'schemaLoadingFinish'
+    }
+    this.sendResponse(message)
+  }
+
+  // Send a response to the client.
+  private sendResponse(message: ResponseMessage): void {
+    const json = JSON.stringify(message)
+    const len = Buffer.byteLength(json, 'utf8')
+    const formattedMessage = `Content-Length: ${1 + len}\r\n\r\n${json}${this.host.newLine}`
+    this.host.write(formattedMessage)
   }
 
   private createDiagnostic(context: TemplateContext, input: CreateDiagnosticInput): Diagnostic {
@@ -128,7 +155,7 @@ export default class MySqlLanguageService implements TemplateLanguageService {
 
     if (keywords.includes(wordAtHover)) {
       const documentation = generateDocumentation(wordAtHover)
-      docs.push({ kind: 'unknown', text: documentation })
+      docs.push({ kind: '', text: documentation })
     }
 
     const result = this.analyzer.getParseResult(context.text)
@@ -145,12 +172,18 @@ export default class MySqlLanguageService implements TemplateLanguageService {
     const tableHeader = ['Name', pad, 'SQL Type', pad, 'TS Type', pad, 'Optional']
     const schemaTables = this.schema.getTables()
 
+    const foundColumns = new Map()
+    const foundTables = new Map()
+
     result.statements.forEach(statement => {
       const queryTables = statement.tables
+
       const queryTable = queryTables.find(t => t.name === word)
       if (queryTable) {
         const schemaTable = schemaTables.find(t => t.name === queryTable.name)
-        if (schemaTable) {
+        // make sure we don't add twice
+        if (schemaTable && !foundTables.get(schemaTable.name)) {
+          foundTables.set(schemaTable.name, true)
           const rows = schemaTable.columns.map(column => createRow(column))
           docs.push({ kind: '', text: markdownTable([tableHeader, ...rows]) })
         }
@@ -160,11 +193,22 @@ export default class MySqlLanguageService implements TemplateLanguageService {
 
       for (const queryTable of queryTables) {
         const schemaTable = schemaTables.find(t => t.name === queryTable.name)
-        const column = schemaTable?.columns.find(c => c.name === word)
-        if (column) {
-          schemaColumn = column
-          break
+        if (!schemaTable) {
+          continue
         }
+
+        const column = schemaTable.columns.find(c => c.name === word)
+        if (!column) {
+          continue
+        }
+
+        // make sure we don't add twice
+        const alreadyFound = foundColumns.get(`${schemaTable.name}:${column.name}`)
+        if (!alreadyFound) {
+          foundColumns.set(`${schemaTable.name}:${column.name}`, true)
+          schemaColumn = column
+        }
+        break
       }
 
       if (schemaColumn) {
@@ -257,7 +301,6 @@ export default class MySqlLanguageService implements TemplateLanguageService {
       tables = this.schema.getTables()
     }
 
-    const query = context.text
     const diagnostics: Diagnostic[] = []
 
     try {
@@ -277,36 +320,58 @@ export default class MySqlLanguageService implements TemplateLanguageService {
             })
           )
           break
-        case 'InvalidSyntaxError':
+        case 'SyntaxErrorGeneric':
           diagnostics.push(
             this.createDiagnostic(context, {
               message: 'MySQL Syntax Error.',
               category: DiagnosticCategory.Error,
-              length: query.length,
-              start: 0,
+              length: data.end - data.start,
+              start: data.start,
               code: error.code
             })
           )
           break
-        case 'InvalidKeywordError': {
-          const correction = this.getCorrection(data.keyword.toLowerCase(), keywords)
+        case 'SyntaxErrorKeyword':
           diagnostics.push(
             this.createDiagnostic(context, {
-              message: `Invalid MySQL keyword '${data.keyword}'. Did you mean '${correction.toUpperCase()}'?`,
+              message: `MySQL Syntax Error. The problem is near the word '${data.keyword}', which is a reserved keyword. Are you missing a semicolon? Did you forget to backtick a column name?`,
               category: DiagnosticCategory.Error,
-              length: data.keyword.length,
+              length: data.end - data.start,
+              start: data.start - 1,
+              code: error.code
+            })
+          )
+          break
+        case 'SyntaxErrorNotKeyword': {
+          const word = data.unidentifiedWord
+          const correction = this.getCorrection(word.toLowerCase(), keywords)
+          const messageParts = [`MySQL Syntax Error. Unidentified word '${word}'.`]
+          if (correction) {
+            messageParts.push(` Did you mean '${correction.toUpperCase()}'?`)
+          }
+
+          diagnostics.push(
+            this.createDiagnostic(context, {
+              message: messageParts.join(''),
+              category: DiagnosticCategory.Error,
+              length: data.end - data.start,
               start: data.start - 1,
               code: error.code
             })
           )
           break
         }
-        case 'InvalidTableError': {
+        case 'SemanticErrorBadTable': {
           const tableNames = tables.map(t => t.name)
           const correction = this.getCorrection(data.table.toLowerCase(), tableNames)
+          const messageParts = [`Table '${data.table}' does not exist in database '${this.databaseName}'.`]
+          if (correction) {
+            messageParts.push(` Did you mean '${correction}'?`)
+          }
+
           diagnostics.push(
             this.createDiagnostic(context, {
-              message: `Table '${data.table}' does not exist in database '${this.databaseName}'. Did you mean '${correction}'?`,
+              message: messageParts.join(''),
               category: DiagnosticCategory.Warning,
               length: data.table.length,
               start: data.start - 1,
@@ -315,13 +380,18 @@ export default class MySqlLanguageService implements TemplateLanguageService {
           )
           break
         }
-        case 'InvalidColumnError': {
+        case 'SemanticErrorBadColumn': {
           const table = tables.find(t => t.name === data.table)
           const columnNames = table?.columns.map(c => c.name) || []
           const correction = this.getCorrection(data.column.toLowerCase(), columnNames)
+          const messageParts = [`Column '${data.column}' does not exist in table '${data.table}'.`]
+          if (correction) {
+            messageParts.push(` Did you mean '${correction}'?`)
+          }
+
           diagnostics.push(
             this.createDiagnostic(context, {
-              message: `Column '${data.column}' does not exist in table '${data.table}'. Did you mean '${correction}'?`,
+              message: messageParts.join(''),
               category: DiagnosticCategory.Warning,
               length: data.column.length,
               start: data.start - 1,
@@ -330,7 +400,7 @@ export default class MySqlLanguageService implements TemplateLanguageService {
           )
           break
         }
-        case 'InvalidColumnValueError': {
+        case 'SemanticErrorBadColumnValue': {
           diagnostics.push(
             this.createDiagnostic(context, {
               message: `Type ${data.receivedType} is not assignable to type ${data.expectedType}`,

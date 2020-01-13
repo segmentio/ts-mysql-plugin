@@ -1,21 +1,60 @@
 import { CompletionEntry } from 'typescript/lib/tsserverlibrary'
-import { complete } from '../lib/editor'
+import client from '../lib/client'
+
+beforeAll(async () => {
+  await client.connect()
+})
+
+afterAll(async () => {
+  await client.disconnect()
+})
 
 describe('Completions', () => {
-  it('returns SQL keyword completions', async () => {
-    const completions = await complete('sql`SELECT * FRO`', {
+  it('returns completions for keywords', async () => {
+    const completions = await client.getCompletionsAtPosition('sql`SELECT * FRO`', {
       offset: 16,
       line: 1
     })
-    expect(completions.some((item: CompletionEntry) => item.name === 'JOIN')).toBeTruthy()
-    expect(completions.some((item: CompletionEntry) => item.name === 'FROM')).toBeTruthy()
+    const completionItem = completions.find((item: CompletionEntry) => item.name === 'FROM')
+    expect(completionItem).toMatchInlineSnapshot(`
+      Object {
+        "kind": "keyword",
+        "kindModifiers": "",
+        "name": "FROM",
+        "sortText": "from",
+      }
+    `)
   })
 
-  // it('returns schema table completions', async () => {
-  //   const completions = await complete('sql`SELECT * FROM user`', {
-  //     offset: 22,
-  //     line: 1
-  //   })
-  //   expect(completions.some((item: CompletionEntry) => item.name === 'users')).toBeTruthy()
-  // })
+  it('returns completions for tables', async () => {
+    const completions = await client.getCompletionsAtPosition('sql`SELECT * FROM user`', {
+      offset: 22,
+      line: 1
+    })
+    const completionItem = completions.find((item: CompletionEntry) => item.name === 'users')
+    expect(completionItem).toMatchInlineSnapshot(`
+      Object {
+        "kind": "class",
+        "kindModifiers": "",
+        "name": "users",
+        "sortText": "users",
+      }
+    `)
+  })
+
+  it('returns completions for columns', async () => {
+    const completions = await client.getCompletionsAtPosition('sql`SELECT friend FROM users`', {
+      offset: 18,
+      line: 1
+    })
+    const completionItem = completions.find((item: CompletionEntry) => item.name === 'friends')
+    expect(completionItem).toMatchInlineSnapshot(`
+      Object {
+        "kind": "property",
+        "kindModifiers": "",
+        "name": "friends",
+        "sortText": "friends",
+      }
+    `)
+  })
 })

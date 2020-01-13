@@ -22,67 +22,92 @@ class EmptyQueryError extends QueryError {
   }
 }
 
-class InvalidSyntaxError extends QueryError {
-  constructor() {
+interface SyntaxErrorGenericData {
+  readonly start: number
+  readonly end: number
+}
+
+class SyntaxErrorGeneric extends QueryError {
+  data: SyntaxErrorGenericData
+
+  constructor(data: SyntaxErrorGenericData) {
     super()
-    this.name = 'InvalidSyntaxError'
+    this.name = 'SyntaxErrorGeneric'
+    this.data = data
     this.code = 1002
   }
 }
 
-interface InvalidKeywordErrorData {
+interface SyntaxErrorKeywordData {
   readonly keyword: string
   readonly start: number
   readonly end: number
 }
 
-class InvalidKeywordError extends QueryError {
-  data: InvalidKeywordErrorData
+class SyntaxErrorKeyword extends QueryError {
+  data: SyntaxErrorKeywordData
 
-  constructor(data: InvalidKeywordErrorData) {
+  constructor(data: SyntaxErrorKeywordData) {
     super()
-    this.name = 'InvalidKeywordError'
+    this.name = 'SyntaxErrorKeyword'
     this.data = data
     this.code = 1003
   }
 }
 
-interface InvalidTableErrorData {
-  readonly table: string
+interface SyntaxErrorNotKeywordData {
+  readonly unidentifiedWord: string
   readonly start: number
   readonly end: number
 }
 
-class InvalidTableError extends QueryError {
-  data: InvalidTableErrorData
+class SyntaxErrorNotKeyword extends QueryError {
+  data: SyntaxErrorNotKeywordData
 
-  constructor(data: InvalidTableErrorData) {
+  constructor(data: SyntaxErrorNotKeywordData) {
     super()
-    this.name = 'InvalidTableError'
+    this.name = 'SyntaxErrorNotKeyword'
     this.data = data
     this.code = 1004
   }
 }
 
-interface InvalidColumnErrorData {
+interface SemanticErrorBadTableData {
+  readonly table: string
+  readonly start: number
+  readonly end: number
+}
+
+class SemanticErrorBadTable extends QueryError {
+  data: SemanticErrorBadTableData
+
+  constructor(data: SemanticErrorBadTableData) {
+    super()
+    this.name = 'SemanticErrorBadTable'
+    this.data = data
+    this.code = 1005
+  }
+}
+
+interface SemanticErrorBadColumnData {
   readonly column: string
   readonly table: string
   readonly start: number
   readonly end: number
 }
 
-class InvalidColumnError extends QueryError {
-  data: InvalidColumnErrorData
+class SemanticErrorBadColumn extends QueryError {
+  data: SemanticErrorBadColumnData
 
-  constructor(data: InvalidColumnErrorData) {
+  constructor(data: SemanticErrorBadColumnData) {
     super()
-    this.name = 'InvalidColumnError'
+    this.name = 'SemanticErrorBadColumn'
     this.data = data
-    this.code = 1005
+    this.code = 1006
   }
 }
 
-interface InvalidColumnValueErrorData {
+interface SemanticErrorBadColumnValueData {
   readonly expectedType: string
   readonly receivedType: string
   readonly length: number
@@ -90,23 +115,24 @@ interface InvalidColumnValueErrorData {
   readonly end: number
 }
 
-class InvalidColumnValueError extends QueryError {
-  data: InvalidColumnValueErrorData
+class SemanticErrorBadColumnValue extends QueryError {
+  data: SemanticErrorBadColumnValueData
 
-  constructor(data: InvalidColumnValueErrorData) {
+  constructor(data: SemanticErrorBadColumnValueData) {
     super()
-    this.name = 'InvalidColumnValueError'
+    this.name = 'SemanticErrorBadColumnValue'
     this.data = data
-    this.code = 1006
+    this.code = 1007
   }
 }
 
 export {
   QueryError,
   EmptyQueryError,
-  InvalidSyntaxError,
-  InvalidKeywordError,
-  InvalidTableError,
-  InvalidColumnError,
-  InvalidColumnValueError
+  SyntaxErrorGeneric,
+  SyntaxErrorKeyword,
+  SyntaxErrorNotKeyword,
+  SemanticErrorBadTable,
+  SemanticErrorBadColumn,
+  SemanticErrorBadColumnValue
 }

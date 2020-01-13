@@ -55,6 +55,7 @@ jobs:
           cd e2e
           yarn install
           docker-compose up -d
-          yarn wait-port 'localhost:3010' --timeout 30000 --wait-for-dns
+          yarn wait-port '127.0.0.1:3010' --timeout 30000 --wait-for-dns
+          sleep 10 # give the database 10 seconds to seed
           cd ..
           yarn test

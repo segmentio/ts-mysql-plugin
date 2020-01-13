@@ -25,6 +25,7 @@ class MySqlPlugin {
     const logger = new Logger(info.project, this.config)
     const templateSettings = this.getTemplateSettings(this.config, info.project, logger)
     const service = new MySqlLanguageService({
+      host: info.serverHost,
       config: this.config,
       logger
     })

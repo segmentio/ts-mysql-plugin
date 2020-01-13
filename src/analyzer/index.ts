@@ -1,10 +1,11 @@
 import {
   EmptyQueryError,
-  InvalidColumnError,
-  InvalidKeywordError,
-  InvalidSyntaxError,
-  InvalidTableError,
-  InvalidColumnValueError
+  SyntaxErrorNotKeyword,
+  SyntaxErrorGeneric,
+  SyntaxErrorKeyword,
+  SemanticErrorBadTable,
+  SemanticErrorBadColumn,
+  SemanticErrorBadColumnValue
 } from './errors'
 import { keywords } from '../constants/keywords'
 import {
@@ -14,19 +15,14 @@ import {
   Statement,
   Table as QueryTable,
   Tables as QueryTables,
-  TableColumn as QueryColumn
+  TableColumn as QueryColumn,
+  ParseResultError
 } from '../lib/sql-parser'
 import { Table as SchemaTable, Tables as SchemaTables, Column as SchemaColumn } from '../schema'
 import getWordAtOffset from '../lib/get-word-at-offset'
 import findAllIndexes from '../lib/find-all-indexes'
 import Logger from '../logger'
 import { TemplateContext } from 'typescript-template-language-service-decorator'
-
-interface SyntaxErrorData {
-  readonly near: string
-  readonly start: number
-  readonly end: number
-}
 
 interface Position {
   readonly start: number
@@ -57,6 +53,7 @@ export default class Analyzer {
       return
     }
 
+    this.logger.log('analyze() - Query going into parser: ' + context.text)
     const result = parse(context.text)
     this.queryToParseResult.set(context.text, result)
     this.analyzeResult(context, schemaTables, result)
@@ -79,27 +76,53 @@ export default class Analyzer {
     return parse(query)
   }
 
-  private analyzeSyntax(context: TemplateContext, error: Error): never {
-    const { near } = this.parseSyntaxError(error.message)
+  /**
+   * Analyze the syntax error.
+   *
+   *   Note: there will always be a position of the error, but not always a `near` word.
+   *   See: https://github.com/vitessio/vitess/blob/master/go/vt/sqlparser/token.go#L456
+   *
+   * @param context
+   * @param error
+   */
+  private analyzeSyntax(context: TemplateContext, error: ParseResultError): never {
+    this.logger.log('.analyzeSyntax()' + context.rawText)
 
-    // `near` is not found, e.g. `SELECT * FROM`, `SELECT * FROM workspaces WHERE id =`
-    if (!near) {
-      throw new InvalidSyntaxError()
-    }
+    const { near, position } = error
+    let word = near
 
-    // `near` is a not valid keyword, e.g. sql`SELECT FRM`
-    if (!keywords.includes(near)) {
-      const position = this.getFirstPosition(context.rawText, near)
-      if (position) {
-        throw new InvalidKeywordError({
-          keyword: near,
-          start: position.start,
-          end: position.end
+    // parser could not identify a nearest word, so let's try to find one ourselves
+    if (!word) {
+      const wordAndRange = getWordAtOffset(position, context.rawText)
+      if (wordAndRange) {
+        // found a nearest word, continue
+        word = wordAndRange.word
+      } else {
+        // could not find a nearest word
+        throw new SyntaxErrorGeneric({
+          start: position,
+          end: position
         })
       }
     }
 
-    throw new InvalidSyntaxError()
+    // there will always be a nearest word here
+    const end = position
+    const start = position - word.length
+
+    if (keywords.includes(word.toLowerCase())) {
+      throw new SyntaxErrorKeyword({
+        start,
+        end,
+        keyword: word
+      })
+    }
+
+    throw new SyntaxErrorNotKeyword({
+      start,
+      end,
+      unidentifiedWord: word
+    })
   }
 
   private analyzeSemantics(context: TemplateContext, statements: Statements, schemaTables: SchemaTables): void {
@@ -133,7 +156,7 @@ export default class Analyzer {
           return
         }
 
-        throw new InvalidTableError({
+        throw new SemanticErrorBadTable({
           table: name,
           start: position.start,
           end: position.end
@@ -161,7 +184,7 @@ export default class Analyzer {
         return
       }
 
-      throw new InvalidColumnError({
+      throw new SemanticErrorBadColumn({
         column: columnName,
         table: tableName,
         start: position.start,
@@ -216,7 +239,7 @@ export default class Analyzer {
       return
     }
 
-    throw new InvalidColumnValueError({
+    throw new SemanticErrorBadColumnValue({
       expectedType: schemaColumn.tsType,
       receivedType: tsType,
       length: match[0].length,
@@ -249,25 +272,5 @@ export default class Analyzer {
     }
 
     return null
-  }
-
-  private parseSyntaxError(message: string): SyntaxErrorData {
-    let position: number | null = null
-    let near: string | '' = ''
-
-    const result = /syntax error at position (\d+) near '(.+)'/.exec(message)
-    if (result) {
-      position = Number(result[1])
-      near = result[2]
-    }
-
-    const endPosition = Number(position)
-    const startPosition = endPosition - near.length
-
-    return {
-      near,
-      start: startPosition,
-      end: endPosition
-    }
   }
 }

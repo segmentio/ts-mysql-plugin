@@ -12,9 +12,9 @@ USE test;
 
 DROP TABLE IF EXISTS users;
 CREATE TABLE users (
-  id VARBINARY(24),
+  id VARBINARY(24) NOT NULL,
   created TIMESTAMP,
   enabled BOOLEAN,
-  friends INT,
+  friends INT
 );
 

@@ -5,7 +5,7 @@
     "plugins": [
       {
         "name": "ts-mysql-plugin",
-        "databaseUri": "mysql://root@localhost:3010/test"
+        "databaseUri": "mysql://root@127.0.0.1:3010/test"
       }
     ]
   }

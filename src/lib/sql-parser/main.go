@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"regexp"
 	"sort"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/urfave/cli/v2"
@@ -15,14 +17,8 @@ import (
 
 // Result represents the parse result.
 type Result struct {
-	Statements Statements `json:"statements"`
-	Error      *Error      `json:"error,omitempty"`
-}
-
-// Error represents an error.
-type Error struct {
-	Name    string `json:"name,omitempty"`
-	Message string `json:"message,omitempty"`
+	Statements Statements       `json:"statements"`
+	Error      *SyntaxErrorData `json:"error,omitempty"`
 }
 
 // Statements represents all statements in the query.
@@ -55,31 +51,7 @@ func main() {
 				Aliases: []string{"v"},
 				Usage:   "parse a sql query",
 				Action: func(c *cli.Context) error {
-					result := Result{}
-
-					queries, err := sqlparser.SplitStatementToPieces(query)
-					if err != nil {
-						result.Error = &Error{Name: "SyntaxError", Message: err.Error()}
-					} else {
-						statements := Statements{}
-
-						for _, query := range queries {
-							tree, err := sqlparser.ParseStrictDDL(query)
-							if err != nil {
-								result.Error = &Error{Name: "SyntaxError", Message: err.Error()}
-								break // if one query fails, the rest cannot be parsed
-							} else {
-								statements = append(statements, Statement{
-									Tables: GetTables(tree),
-									Tree:   tree,
-									Type:   sqlparser.Preview(query).String(),
-								})
-							}
-						}
-
-						result.Statements = statements
-					}
-
+					result := Parse(query)
 					resultJSON, _ := json.Marshal(&result)
 					fmt.Println(string(resultJSON))
 					return nil
@@ -94,6 +66,77 @@ func main() {
 	err := app.Run(os.Args)
 	if err != nil {
 		log.Fatal(err)
+	}
+}
+
+// Parse parses the query.
+func Parse(originalQuery string) Result {
+	result := Result{}
+
+	const cutset = "\t \n \v \f \r"
+	beforeLength := len(originalQuery)
+	formattedQuery := strings.TrimLeft(originalQuery, cutset)
+	afterLength := len(formattedQuery)
+	amountToAddToError := beforeLength - afterLength
+	formattedQuery = strings.TrimRight(formattedQuery, cutset)
+
+	queries, err := sqlparser.SplitStatementToPieces(formattedQuery)
+	if err != nil {
+		result.Error = ParseSyntaxError(err, amountToAddToError)
+	} else {
+		statements := Statements{}
+
+		for _, query := range queries {
+			tree, err := sqlparser.ParseStrictDDL(query)
+			if err != nil {
+				result.Error = ParseSyntaxError(err, amountToAddToError)
+				break // if one query fails, the rest cannot be parsed
+			} else {
+				statements = append(statements, Statement{
+					Tables: GetTables(tree),
+					Tree:   tree,
+					Type:   sqlparser.Preview(query).String(),
+				})
+			}
+			// In multiple statements, if there's a syntax error, the parser includes a position
+			// relative to the single statement being parsed, so we need to manually keep track
+			// of how much to add to the position.
+			amountToAddToError += len(query) + 1
+		}
+
+		result.Statements = statements
+	}
+
+	return result
+}
+
+// SyntaxErrorData represents the data parsed from the syntax error.
+type SyntaxErrorData struct {
+	Position int    `json:"position"`
+	Near     string `json:"near"`
+}
+
+// ParseSyntaxError parses the syntax error.
+// e.g. syntax error at position 10 near 'selec'
+func ParseSyntaxError(err error, amountToAddToError int) *SyntaxErrorData {
+	pattern := regexp.MustCompile(`syntax error at position (\d+)(?: near ['"](\w+)['"])?`)
+	matches := pattern.FindAllStringSubmatch(err.Error(), -1)
+
+	var position string
+	var near string
+	for _, match := range matches {
+		position = match[1]
+		near = match[2]
+	}
+
+	endPosition, err := strconv.Atoi(position)
+	if err != nil {
+		// noop
+	}
+
+	return &SyntaxErrorData{
+		Position: endPosition + amountToAddToError,
+		Near:     near,
 	}
 }
 
@@ -280,7 +323,39 @@ func GetTables(tree sqlparser.SQLNode) Tables {
 		}
 	}
 
+	// sort tables by name
+	sort.Sort(byTableName(tables))
+
+	// sort columns by name
+	for _, table := range tables {
+		sort.Sort(byColumnName(table.Columns))
+	}
+
 	return tables
+}
+
+// byTableName implements sort.Interface based on the Name field.
+type byTableName Tables
+func (a byTableName) Len() int {
+	return len(a)
+}
+func (a byTableName) Less(i, j int) bool {
+	return a[i].Name < a[j].Name
+}
+func (a byTableName) Swap(i, j int)  {
+	a[i], a[j] = a[j], a[i]
+}
+
+// byColumnName implements sort.Interface based on the Name field.
+type byColumnName TableColumns
+func (a byColumnName) Len() int {
+	return len(a)
+}
+func (a byColumnName) Less(i, j int) bool {
+	return a[i].Name < a[j].Name
+}
+func (a byColumnName) Swap(i, j int)  {
+	a[i], a[j] = a[j], a[i]
 }
 
 // IsValue returns true if the Expr is a string, integral or value arg.
