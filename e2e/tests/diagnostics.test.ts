@@ -335,4 +335,24 @@ describe('Diagnostics', () => {
       }
     `)
   })
+
+  it(`returns correct diagnostic for query: ${'sql`INSERT INTO users (id, enabled) VALUES ("1")`'}`, async () => {
+    const [error] = await send('sql`INSERT INTO users (id, enabled) VALUES ("1")`')
+    expect(error).toMatchInlineSnapshot(`
+      Object {
+        "category": "warning",
+        "code": 1008,
+        "end": Object {
+          "line": 2,
+          "offset": 50,
+        },
+        "source": "ts-mysql-plugin",
+        "start": Object {
+          "line": 2,
+          "offset": 6,
+        },
+        "text": "Column count does not match row count.",
+      }
+    `)
+  })
 })
