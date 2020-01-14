@@ -126,6 +126,23 @@ class SemanticErrorBadColumnValue extends QueryError {
   }
 }
 
+interface SemanticErrorColumnCountDoesNotMatchRowCountData {
+  readonly length: number
+  readonly start: number
+  readonly end: number
+}
+
+class SemanticErrorColumnCountDoesNotMatchRowCount extends QueryError {
+  data: SemanticErrorColumnCountDoesNotMatchRowCountData
+
+  constructor(data: SemanticErrorColumnCountDoesNotMatchRowCountData) {
+    super()
+    this.name = 'SemanticErrorColumnCountDoesNotMatchRowCount'
+    this.data = data
+    this.code = 1008
+  }
+}
+
 export {
   QueryError,
   EmptyQueryError,
@@ -134,5 +151,6 @@ export {
   SyntaxErrorNotKeyword,
   SemanticErrorBadTable,
   SemanticErrorBadColumn,
-  SemanticErrorBadColumnValue
+  SemanticErrorBadColumnValue,
+  SemanticErrorColumnCountDoesNotMatchRowCount
 }

@@ -443,6 +443,18 @@ export default class MySqlLanguageService implements TemplateLanguageService {
           )
           break
         }
+        case 'SemanticErrorColumnCountDoesNotMatchRowCount': {
+          diagnostics.push(
+            this.createDiagnostic(context, {
+              message: 'Column count does not match row count.',
+              category: DiagnosticCategory.Warning,
+              length: data.length,
+              start: data.start,
+              code: error.code
+            })
+          )
+          break
+        }
       }
     }
 

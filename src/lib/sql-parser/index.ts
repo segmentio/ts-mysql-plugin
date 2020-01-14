@@ -1,13 +1,16 @@
 import spawn from 'cross-spawn'
+import Logger from '../../logger'
 import path from 'path'
 
 export type Tables = Table[]
 export type TableColumns = TableColumn[]
+export type TableRows = TableRow[]
 
 export interface Table {
   name: string
   alias: string
   columns: TableColumns
+  rows: TableRows
 }
 
 export interface TableColumn {
@@ -17,6 +20,12 @@ export interface TableColumn {
   value?: any
   tsType?: string
   operator?: string
+}
+
+export interface TableRow {
+  tsType: string
+  // eslint-disable-next-line
+  value: any
 }
 
 export interface ParseResultError {
@@ -43,9 +52,17 @@ export interface ParseResult {
   error?: ParseResultError
 }
 
-export function parse(query: string): ParseResult {
+export function parse(query: string, logger: Logger): ParseResult | null {
   const binaryTarget = path.resolve(__dirname, `../../sql-parser-${process.platform}`)
   const program = spawn.sync(binaryTarget, ['--query', query, 'parse'])
   const result = program.stdout.toString()
-  return JSON.parse(result)
+  try {
+    const parsedResult = JSON.parse(result)
+    return parsedResult
+  } catch (e) {
+    logger.log('Error in SQL parsing - query: ' + query)
+    logger.log('Error in SQL parsing - result: ' + result)
+    // do not break plugin
+    return null
+  }
 }

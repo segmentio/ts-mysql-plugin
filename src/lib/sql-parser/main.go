@@ -148,6 +148,7 @@ type Table struct {
 	Name    string       `json:"name"`
 	Alias   string       `json:"alias,omitempty" bson:",omitempty"`
 	Columns TableColumns `json:"columns"`
+	Rows    TableRows    `json:"rows"`
 }
 
 // TableColumns represents an array of table columns.
@@ -184,6 +185,25 @@ type Comparison struct {
 	InType   string
 }
 
+// TableRows represents an array of table rows.
+type TableRows = []TableRow
+
+// TableRow represents an insert table row.
+type TableRow struct {
+	TsType string
+	Value  interface{}
+}
+
+// Rows represents an array of rows.
+type Rows = []Row
+
+// Row represents an insert row.
+type Row struct {
+	Table  string
+	TsType string
+	Value  interface{}
+}
+
 // GetTables gets all tables in the query.
 func GetTables(tree sqlparser.SQLNode) Tables {
 	columnNames := make(map[string]bool, 0)
@@ -191,6 +211,7 @@ func GetTables(tree sqlparser.SQLNode) Tables {
 	comparisons := make(Comparisons, 0)
 	columns := make(Columns, 0)
 	tables := make(Tables, 0)
+	rows := make(Rows, 0)
 
 	// Walking the AST is expensive, so we'll do it once, grab all relevant information, and organize it later.
 	_ = sqlparser.Walk(func(node sqlparser.SQLNode) (kontinue bool, err error) {
@@ -234,20 +255,48 @@ func GetTables(tree sqlparser.SQLNode) Tables {
 				}
 			}
 		case *sqlparser.Insert:
-			rows := node.Rows.(sqlparser.Values)[0]
-			for i, column := range node.Columns {
-				value := GetValueAndType(rows[i])
-				name := column.CompliantName()
-				// This allows us to skip looking for `ColIdent`, which solves the problem that Vitess has
-				// of misidentifying function calls as `ColIdent`
-				columnNames[name] = true
-				comparisons = append(comparisons, Comparison{
-					Table:  node.Table.Name.CompliantName(),
-					Column: column.CompliantName(),
-					Value:  value.Value,
+			table := node.Table.Name.CompliantName()
+			insertRows := node.Rows.(sqlparser.Values)[0]
+
+			for _, insertRow := range insertRows {
+				value := GetValueAndType(insertRow)
+				rows = append(rows, Row{
+					Table:  table,
 					TsType: value.TsType,
-					InType: "list",
+					Value:  value.Value,
 				})
+			}
+
+			// The SQL parser doesn't currently throw an error if
+			// you try to insert more rows than specified columns.
+			// We'll handle this problem in the client.
+			if len(rows) != len(node.Columns) {
+				for _, column := range node.Columns {
+					name := column.CompliantName()
+					// This allows us to skip looking for `ColIdent`, which solves the problem that Vitess has
+					// of misidentifying function calls as `ColIdent`
+					columnNames[name] = true
+					comparisons = append(comparisons, Comparison{
+						Table:  table,
+						Column: column.CompliantName(),
+						InType: "list",
+					})
+				}
+			} else {
+				for i, column := range node.Columns {
+					value := GetValueAndType(insertRows[i])
+					name := column.CompliantName()
+					// This allows us to skip looking for `ColIdent`, which solves the problem that Vitess has
+					// of misidentifying function calls as `ColIdent`
+					columnNames[name] = true
+					comparisons = append(comparisons, Comparison{
+						Table:  table,
+						Column: column.CompliantName(),
+						Value:  value.Value,
+						TsType: value.TsType,
+						InType: "list",
+					})
+				}
 			}
 		}
 		return true, nil
@@ -288,6 +337,20 @@ func GetTables(tree sqlparser.SQLNode) Tables {
 			}
 			table.Columns = append(table.Columns, TableColumn{
 				Name: column.Name,
+			})
+			tables[j] = table
+		}
+	}
+
+	// merge rows into corresponding table
+	for _, row := range rows {
+		for j, table := range tables {
+			if row.Table != table.Name {
+				continue
+			}
+			table.Rows = append(table.Rows, TableRow{
+				TsType: row.TsType,
+				Value:  row.Value,
 			})
 			tables[j] = table
 		}
@@ -336,25 +399,27 @@ func GetTables(tree sqlparser.SQLNode) Tables {
 
 // byTableName implements sort.Interface based on the Name field.
 type byTableName Tables
+
 func (a byTableName) Len() int {
 	return len(a)
 }
 func (a byTableName) Less(i, j int) bool {
 	return a[i].Name < a[j].Name
 }
-func (a byTableName) Swap(i, j int)  {
+func (a byTableName) Swap(i, j int) {
 	a[i], a[j] = a[j], a[i]
 }
 
 // byColumnName implements sort.Interface based on the Name field.
 type byColumnName TableColumns
+
 func (a byColumnName) Len() int {
 	return len(a)
 }
 func (a byColumnName) Less(i, j int) bool {
 	return a[i].Name < a[j].Name
 }
-func (a byColumnName) Swap(i, j int)  {
+func (a byColumnName) Swap(i, j int) {
 	a[i], a[j] = a[j], a[i]
 }
 

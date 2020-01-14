@@ -5,7 +5,8 @@ import {
   SyntaxErrorKeyword,
   SemanticErrorBadTable,
   SemanticErrorBadColumn,
-  SemanticErrorBadColumnValue
+  SemanticErrorBadColumnValue,
+  SemanticErrorColumnCountDoesNotMatchRowCount
 } from './errors'
 import { keywords } from '../constants/keywords'
 import {
@@ -14,7 +15,6 @@ import {
   Statements,
   Statement,
   Table as QueryTable,
-  Tables as QueryTables,
   TableColumn as QueryColumn,
   ParseResultError
 } from '../lib/sql-parser'
@@ -54,9 +54,11 @@ export default class Analyzer {
     }
 
     this.logger.log('analyze() - Query going into parser: ' + context.text)
-    const result = parse(context.text)
-    this.queryToParseResult.set(context.text, result)
-    this.analyzeResult(context, schemaTables, result)
+    const result = parse(context.text, this.logger)
+    if (result) {
+      this.queryToParseResult.set(context.text, result)
+      this.analyzeResult(context, schemaTables, result)
+    }
   }
 
   private analyzeResult(context: TemplateContext, schemaTables: SchemaTables, result: ParseResult): void {
@@ -68,12 +70,12 @@ export default class Analyzer {
     }
   }
 
-  public getParseResult(query: string): ParseResult {
+  public getParseResult(query: string): ParseResult | null {
     const result = this.queryToParseResult.get(query)
     if (result) {
       return result
     }
-    return parse(query)
+    return parse(query, this.logger)
   }
 
   /**
@@ -135,18 +137,32 @@ export default class Analyzer {
       if (statement.type === 'DDL') {
         return
       }
-      this.analyzeTables(context, statement.tables, schemaTables)
+
+      this.analyzeTables(context, statement, schemaTables)
     })
   }
 
-  private analyzeTables(context: TemplateContext, queryTables: QueryTables, schemaTables: SchemaTables): void {
+  private analyzeTables(context: TemplateContext, statement: Statement, schemaTables: SchemaTables): void {
+    const queryTables = statement.tables
+
     queryTables.forEach(queryTable => {
-      const { name } = queryTable
+      const { name, columns, rows } = queryTable
 
       // SQL parser returns "dual" as table name for expressions with "*"
       // https://github.com/xwb1989/sqlparser/blob/master/sql.y#L1672
       if (!name || name === 'dual') {
         return
+      }
+
+      // ensure row count matches column count.
+      if (statement.type === 'INSERT') {
+        if (rows.length !== columns.length) {
+          throw new SemanticErrorColumnCountDoesNotMatchRowCount({
+            start: 0,
+            end: 0,
+            length: context.rawText.length
+          })
+        }
       }
 
       const schemaTable = schemaTables.find(t => t.name === name)

@@ -118,6 +118,20 @@ func TestGetTables(t *testing.T) {
 			Table{
 				Name:  "allowed_labels",
 				Alias: "",
+				Rows: []TableRow{
+					TableRow{
+						TsType: "string",
+						Value:  "some-id",
+					},
+					TableRow{
+						TsType: "number",
+						Value:  123,
+					},
+					TableRow{
+						TsType: "boolean",
+						Value:  false,
+					},
+				},
 				Columns: []TableColumn{
 					TableColumn{
 						Name:   "id",
@@ -136,6 +150,38 @@ func TestGetTables(t *testing.T) {
 						InType: "list",
 						Value:  123,
 						TsType: "number",
+					},
+				},
+			},
+		},
+	}, {
+		in: "INSERT INTO allowed_labels (id, workspace_id) VALUES ('some-id', 123, false)",
+		out: []Table{
+			Table{
+				Name:  "allowed_labels",
+				Alias: "",
+				Rows: []TableRow{
+					TableRow{
+						TsType: "string",
+						Value:  "some-id",
+					},
+					TableRow{
+						TsType: "number",
+						Value:  123,
+					},
+					TableRow{
+						TsType: "boolean",
+						Value:  false,
+					},
+				},
+				Columns: []TableColumn{
+					TableColumn{
+						Name:   "id",
+						InType: "list",
+					},
+					TableColumn{
+						Name:   "workspace_id",
+						InType: "list",
 					},
 				},
 			},
