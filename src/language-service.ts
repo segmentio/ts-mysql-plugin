@@ -80,7 +80,7 @@ export default class MySqlLanguageService implements TemplateLanguageService {
   private readonly config: Configuration
 
   public constructor({ host, logger, config }: MySqlLanguageServiceOptions) {
-    this.analyzer = new Analyzer(logger)
+    this.analyzer = new Analyzer()
     this.config = config
     this.logger = logger
     this.host = host

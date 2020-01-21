@@ -186,6 +186,11 @@ debug@^4.1.1:
   dependencies:
     ms "^2.1.1"
 
+decorator-cache-getter@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/decorator-cache-getter/-/decorator-cache-getter-1.0.0.tgz#ef2549229dfb8301f4f231a2457b7503567f48c4"
+  integrity sha512-yB49c5qi0govRjpe18vutEkkKzosIt2XggYSs1Qyev1TJYTh2WmLgDp0dV6VJ/6yNBRlKG+qMG80Vy4Bg0mLJw==
+
 delay@^4.3.0:
   version "4.3.0"
   resolved "https://registry.yarnpkg.com/delay/-/delay-4.3.0.tgz#efeebfb8f545579cb396b3a722443ec96d14c50e"
@@ -701,10 +706,12 @@ source-map@^0.6.0:
   resolved "https://registry.yarnpkg.com/source-map/-/source-map-0.6.1.tgz#74722af32e9614e9c287a8d0bbde48b5e2f1a263"
   integrity sha512-UjgapumWlbMhkBgzT7Ykc5YXUT46F0iKu8SGXq0bcwP5dz/h0Plj6enJqjz1Zbq2l5WaqYnrVbwWOWMyF3F47g==
 
-sql-template-strings@^2.2.2:
-  version "2.2.2"
-  resolved "https://registry.yarnpkg.com/sql-template-strings/-/sql-template-strings-2.2.2.tgz#3f11508a25addfce217a3042a9d300c3193b96ff"
-  integrity sha1-PxFQiiWt384hejBCqdMAwxk7lv8=
+sql-template-tag@^3.3.0:
+  version "3.3.0"
+  resolved "https://registry.yarnpkg.com/sql-template-tag/-/sql-template-tag-3.3.0.tgz#4ce737be7fd2bcd8f41b785b50238b753655da6e"
+  integrity sha512-NcDiNt1m1pOpXTGDp339kRPHeKTdWj9qOPLItvllcw2mgInG3+B1Qy0jXAfA685whpVGyY/Nho6v2Ob/tafhwQ==
+  dependencies:
+    decorator-cache-getter "^1.0.0"
 
 sqlstring@^2.3.1:
   version "2.3.1"
@@ -749,7 +756,7 @@ tough-cookie@~2.4.3:
     punycode "^1.4.1"
 
 "ts-mysql-plugin@file:./..":
-  version "0.1.0"
+  version "0.1.6"
   dependencies:
     cross-spawn "^7.0.1"
     leven "^3.1.0"
@@ -757,9 +764,15 @@ tough-cookie@~2.4.3:
     mysql-parse "^2.0.8"
     mysql2 "^2.1.0"
     smart-truncate "^1.0.1"
+    ts-simple-type "^0.3.7"
     typescript "^3.7.4"
     typescript-template-language-service-decorator segmentio/typescript-template-language-service-decorator
     vscode "^1.1.36"
+
+ts-simple-type@^0.3.7:
+  version "0.3.7"
+  resolved "https://registry.yarnpkg.com/ts-simple-type/-/ts-simple-type-0.3.7.tgz#1e77222c3d90d7093f80a954e74c725fd99c911c"
+  integrity sha512-bDXWURwpDpe1mA5E9eldmI0Mpt9zGprhtN/ZTLOJjsAMyeMy1UT7WvGRQghYewIYBYxDZurChhe4DrsPbcCVrA==
 
 tunnel-agent@^0.6.0:
   version "0.6.0"

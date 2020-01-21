@@ -1,4 +1,4 @@
-import { SqlDataType, TsDataType } from '../constants/data-types'
+import { SqlDataType, TsDataType } from './data-types'
 
 export default function sqlTypeToTsType(dataType: SqlDataType): TsDataType {
   switch (dataType) {
@@ -11,8 +11,19 @@ export default function sqlTypeToTsType(dataType: SqlDataType): TsDataType {
     case SqlDataType.TIME:
     case SqlDataType.GEOMETRY:
     case SqlDataType.SET:
-    case SqlDataType.ENUM:
+    case SqlDataType.TINYBLOB:
+    case SqlDataType.MEDIUMBLOB:
+    case SqlDataType.LONGBLOB:
+    case SqlDataType.BLOB:
+    case SqlDataType.BINARY:
+    case SqlDataType.VARBINARY:
+    case SqlDataType.BIT:
+    case SqlDataType.JSON:
       return TsDataType.STRING
+    case SqlDataType.ENUM:
+      return TsDataType.ENUM
+    case SqlDataType.TINYINT:
+      return TsDataType.BOOLEAN
     case SqlDataType.INTEGER:
     case SqlDataType.INT:
     case SqlDataType.SMALLINT:
@@ -24,23 +35,9 @@ export default function sqlTypeToTsType(dataType: SqlDataType): TsDataType {
     case SqlDataType.FLOAT:
     case SqlDataType.YEAR:
       return TsDataType.NUMBER
-    case SqlDataType.TINYINT:
-      return TsDataType.BOOLEAN
-    case SqlDataType.JSON:
-      return TsDataType.STRING // TODO: is this better as an object?
     case SqlDataType.DATE:
     case SqlDataType.DATETIME:
     case SqlDataType.TIMESTAMP:
       return TsDataType.DATE
-    case SqlDataType.TINYBLOB:
-    case SqlDataType.MEDIUMBLOB:
-    case SqlDataType.LONGBLOB:
-    case SqlDataType.BLOB:
-    case SqlDataType.BINARY:
-    case SqlDataType.VARBINARY:
-    case SqlDataType.BIT:
-      return TsDataType.STRING // TODO: is this better as a buffer?
-    default:
-      return TsDataType.ANY
   }
 }

@@ -34,11 +34,11 @@ export enum SqlDataType {
 }
 
 export enum TsDataType {
+  BOOLEAN = 'boolean',
   STRING = 'string',
   NUMBER = 'number',
-  BOOLEAN = 'boolean',
-  OBJECT = 'object',
+  ARRAY = 'array',
   DATE = 'date',
-  BUFFER = 'buffer',
-  ANY = 'any'
+  ENUM = 'enum',
+  NULL = 'null'
 }
