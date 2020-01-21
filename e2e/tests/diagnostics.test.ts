@@ -10,7 +10,7 @@ afterAll(async () => {
 })
 
 function send(query: string): Promise<Diagnostic[]> {
-  return client.getSemanticDiagnostics(`import sql from "sql-template-strings"\n ${query}`)
+  return client.getSemanticDiagnostics(`import sql, { empty, join, raw } from "sql-template-tag"\n ${query}`)
 }
 
 describe('Diagnostics', () => {
@@ -264,12 +264,12 @@ describe('Diagnostics', () => {
         "code": 1007,
         "end": Object {
           "line": 2,
-          "offset": 44,
+          "offset": 45,
         },
         "source": "ts-mysql-plugin",
         "start": Object {
           "line": 2,
-          "offset": 40,
+          "offset": 33,
         },
         "text": "Type null is not assignable to type string",
       }
@@ -284,12 +284,12 @@ describe('Diagnostics', () => {
         "code": 1007,
         "end": Object {
           "line": 2,
-          "offset": 42,
+          "offset": 38,
         },
         "source": "ts-mysql-plugin",
         "start": Object {
           "line": 2,
-          "offset": 38,
+          "offset": 33,
         },
         "text": "Type null is not assignable to type string",
       }
@@ -336,6 +336,51 @@ describe('Diagnostics', () => {
     `)
   })
 
+  it(`returns correct diagnostic for query: ${'const someDate = new Date()\n sql`SELECT id FROM users WHERE id = ${someDate}`'}`, async () => {
+    const [error] = await send('const someDate = new Date()\n sql`SELECT id FROM users WHERE id = ${someDate}`')
+    expect(error).toMatchInlineSnapshot(`
+      Object {
+        "category": "warning",
+        "code": 1007,
+        "end": Object {
+          "line": 3,
+          "offset": 49,
+        },
+        "source": "ts-mysql-plugin",
+        "start": Object {
+          "line": 3,
+          "offset": 33,
+        },
+        "text": "Type date is not assignable to type string",
+      }
+    `)
+  })
+
+  it(`returns correct diagnostic for query: ${'sql`SELECT id FROM users WHERE id = ${new Date()}`'}`, async () => {
+    const [error] = await send('sql`SELECT id FROM users WHERE id = ${new Date()}`')
+    expect(error).toMatchInlineSnapshot(`
+      Object {
+        "category": "warning",
+        "code": 1007,
+        "end": Object {
+          "line": 2,
+          "offset": 38,
+        },
+        "source": "ts-mysql-plugin",
+        "start": Object {
+          "line": 2,
+          "offset": 33,
+        },
+        "text": "Type date is not assignable to type string",
+      }
+    `)
+  })
+
+  it(`returns correct diagnostic for query: ${'sql`INSERT INTO users (id) VALUES (${new Date()})`'}`, async () => {
+    const [error] = await send('sql`INSERT INTO users (id) VALUES (${new Date()})`')
+    expect(error).toMatchInlineSnapshot(`undefined`)
+  })
+
   it(`returns correct diagnostic for query: ${'sql`INSERT INTO users (id, enabled) VALUES ("1")`'}`, async () => {
     const [error] = await send('sql`INSERT INTO users (id, enabled) VALUES ("1")`')
     expect(error).toMatchInlineSnapshot(`
@@ -352,6 +397,57 @@ describe('Diagnostics', () => {
           "offset": 6,
         },
         "text": "Column count does not match row count.",
+      }
+    `)
+  })
+
+  it(`returns correct diagnostic for query: ${'sql`INSERT INTO users (id, created) VALUES ("1")`'}`, async () => {
+    const content = [
+      "const user = { id: 'some-id', created: new Date() }",
+      'sql`INSERT INTO users (id, created) VALUES (${user.id}, ${user.created})`'
+    ].join('\n')
+    const [error] = await send(content)
+    expect(error).toMatchInlineSnapshot(`undefined`)
+  })
+
+  it(`returns correct diagnostic for query: ${'sql`SELECT * FROM users WHERE id IN (${join(input.ids)})`'}`, async () => {
+    const content = [
+      "const input = { ids: ['some-id-1', 'some-id-2'] }",
+      'sql`SELECT * FROM users WHERE id IN (${join(input.ids)})`'
+    ].join('\n')
+    const [error] = await send(content)
+    expect(error).toMatchInlineSnapshot(`undefined`)
+  })
+
+  it(`returns correct diagnostic for query: ${'sql`SELECT * FROM users WHERE id = ${enumMember}`'}`, async () => {
+    const content = [
+      "enum colors { GREEN = 'GREEN', BLUE = 'BLUE', RED = 'RED' }",
+      'sql`SELECT * FROM users WHERE id = ${colors.GREEN}`'
+    ].join('\n')
+    const [error] = await send(content)
+    expect(error).toMatchInlineSnapshot(`undefined`)
+  })
+
+  it(`returns correct diagnostic for query: ${'sql`SELECT * FROM users WHERE id = ${enumMember}`'}`, async () => {
+    const content = [
+      "enum colors { GREEN = 'GREEN', BLUE = 'BLUE', RED = 'RED' }",
+      'sql`SELECT * FROM users WHERE enabled = ${colors.GREEN}`'
+    ].join('\n')
+    const [error] = await send(content)
+    expect(error).toMatchInlineSnapshot(`
+      Object {
+        "category": "warning",
+        "code": 1007,
+        "end": Object {
+          "line": 3,
+          "offset": 56,
+        },
+        "source": "ts-mysql-plugin",
+        "start": Object {
+          "line": 3,
+          "offset": 31,
+        },
+        "text": "Type string is not assignable to type boolean",
       }
     `)
   })

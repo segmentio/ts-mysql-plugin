@@ -2,7 +2,7 @@ import { Logger } from 'typescript-template-language-service-decorator'
 import { server } from 'typescript/lib/tsserverlibrary'
 import { Configuration } from './configuration'
 
-export default class implements Logger {
+export default class ServiceLogger implements Logger {
   private readonly project: server.Project
   private readonly config: Configuration
 

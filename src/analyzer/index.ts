@@ -21,7 +21,6 @@ import {
 import { Table as SchemaTable, Tables as SchemaTables, Column as SchemaColumn } from '../schema'
 import getWordAtOffset from '../lib/get-word-at-offset'
 import findAllIndexes from '../lib/find-all-indexes'
-import Logger from '../logger'
 import { TemplateContext } from 'typescript-template-language-service-decorator'
 
 interface Position {
@@ -33,16 +32,12 @@ type QueryToParseResult = Map<string, ParseResult>
 
 export default class Analyzer {
   private queryToParseResult: QueryToParseResult
-  private readonly logger: Logger
 
-  public constructor(logger: Logger) {
-    this.logger = logger
+  public constructor() {
     this.queryToParseResult = new Map()
   }
 
   public analyze(context: TemplateContext, schemaTables: SchemaTables = []): void {
-    this.logger.log('analyze()')
-
     if (!context.text) {
       throw new EmptyQueryError()
     }
@@ -53,8 +48,7 @@ export default class Analyzer {
       return
     }
 
-    this.logger.log('analyze() - Query going into parser: ' + context.text)
-    const result = parse(context.text, this.logger)
+    const result = parse(context.text)
     if (result) {
       this.queryToParseResult.set(context.text, result)
       this.analyzeResult(context, schemaTables, result)
@@ -75,7 +69,7 @@ export default class Analyzer {
     if (result) {
       return result
     }
-    return parse(query, this.logger)
+    return parse(query)
   }
 
   /**
@@ -88,8 +82,6 @@ export default class Analyzer {
    * @param error
    */
   private analyzeSyntax(context: TemplateContext, error: ParseResultError): never {
-    this.logger.log('.analyzeSyntax()' + context.rawText)
-
     const { near, position } = error
     let word = near
 
@@ -216,7 +208,6 @@ export default class Analyzer {
       return
     }
 
-    // type is correct
     if (tsType === schemaColumn.tsType) {
       return
     }
@@ -228,6 +219,10 @@ export default class Analyzer {
 
     let pattern = new RegExp(value)
 
+    // TODO: validate types for rows to be inserted.
+
+    // Here, we should choose a regex pattern based on the statement type.
+
     // e.g. 'SELECT id from workspaces WHERE version = 1'
     // expression: version = 1, columnName: version, operator: =, value: 1
     // also matches against embedded expressions e.g. SELECT id from workspaces WHERE version = ${someVersion}
@@ -236,11 +231,6 @@ export default class Analyzer {
     } else if (inType === 'list') {
       // e.g. `INSERT INTO workspaces (id) VALUES (1) => 1 is the value
       pattern = new RegExp(value)
-    }
-
-    // catch NULL or null
-    if (tsType === 'null') {
-      pattern = new RegExp(value, 'i')
     }
 
     // match against raw text because it contains the string with the variable name,

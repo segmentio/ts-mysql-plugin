@@ -1,7 +1,7 @@
-import sqlTypeToTsType from './lib/sql-type-to-ts-type'
+import sqlTypeToTsType from './sql-type-to-ts-type'
 import { Connection, createConnection, QueryError } from 'mysql2'
-import { SqlDataType } from './constants/data-types'
-import Logger from './logger'
+import { SqlDataType } from './data-types'
+import Logger from '../logger'
 import { EventEmitter } from 'events'
 
 export type Tables = Table[]
