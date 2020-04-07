@@ -21,7 +21,7 @@ describe('Completions', () => {
         "kind": "keyword",
         "kindModifiers": "",
         "name": "FROM",
-        "sortText": "from",
+        "sortText": "FROM",
       }
     `)
   })
@@ -44,7 +44,7 @@ describe('Completions', () => {
 
   it('returns completions for columns', async () => {
     const completions = await client.getCompletionsAtPosition('sql`SELECT friend FROM users`', {
-      offset: 18,
+      offset: 13,
       line: 1
     })
     const completionItem = completions.find((item: CompletionEntry) => item.name === 'friends')

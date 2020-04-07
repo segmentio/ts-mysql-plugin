@@ -50,9 +50,12 @@ describe('QuickInfo', () => {
         "documentation": "| Name    | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | SQL Type  | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | TS Type | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | Optional |
       | ------- | ------------------------------ | --------- | ------------------------------ | ------- | ------------------------------ | -------- |
       | id      | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | varbinary | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | string  | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | false    |
+      | name    | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | varbinary | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | string  | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | true     |
+      | email   | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | varbinary | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | string  | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | true     |
       | created | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | timestamp | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | date    | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | false    |
-      | enabled | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | tinyint   | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | boolean | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | true     |
-      | friends | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | int       | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | number  | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | true     |",
+      | enabled | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | tinyint   | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | boolean | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | false    |
+      | friends | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | int       | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | number  | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | false    |
+      | project | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | int       | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | number  | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | true     |",
         "end": Object {
           "line": 1,
           "offset": 24,
@@ -70,24 +73,30 @@ describe('QuickInfo', () => {
 
   it('returns quickinfo for columns', async () => {
     const quickInfo = await client.getQuickInfoAtPosition('sql`SELECT id FROM users`', {
-      offset: 14,
+      offset: 20,
       line: 1
     })
     expect(quickInfo).toMatchInlineSnapshot(`
       Object {
         "displayString": "",
-        "documentation": "| Name | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | SQL Type  | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | TS Type | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | Optional |
-      | ---- | ------------------------------ | --------- | ------------------------------ | ------- | ------------------------------ | -------- |
-      | id   | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | varbinary | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | string  | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | false    |",
+        "documentation": "| Name    | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | SQL Type  | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | TS Type | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | Optional |
+      | ------- | ------------------------------ | --------- | ------------------------------ | ------- | ------------------------------ | -------- |
+      | id      | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | varbinary | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | string  | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | false    |
+      | name    | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | varbinary | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | string  | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | true     |
+      | email   | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | varbinary | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | string  | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | true     |
+      | created | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | timestamp | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | date    | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | false    |
+      | enabled | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | tinyint   | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | boolean | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | false    |
+      | friends | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | int       | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | number  | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | false    |
+      | project | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | int       | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | number  | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | true     |",
         "end": Object {
           "line": 1,
-          "offset": 14,
+          "offset": 25,
         },
         "kind": "string",
         "kindModifiers": "",
         "start": Object {
           "line": 1,
-          "offset": 12,
+          "offset": 20,
         },
         "tags": Array [],
       }

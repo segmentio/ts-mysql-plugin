@@ -58,7 +58,6 @@ If you add `@ts-mysql-plugin ignore` in a comment at the top of a file, then the
 Run the following:
 
 ```shell
-go get ./src/lib/sql-parser
 yarn install
 yarn build
 ```

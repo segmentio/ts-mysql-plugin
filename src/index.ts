@@ -1,5 +1,6 @@
 import {
   decorateWithTemplateLanguageService as decorate,
+  TemplateSubstitutions,
   TemplateSettings
 } from 'typescript-template-language-service-decorator'
 import ts from 'typescript/lib/tsserverlibrary'
@@ -21,7 +22,7 @@ class MySqlPlugin {
   public create(info: ts.server.PluginCreateInfo): ts.LanguageService {
     this.config.update(info.config)
 
-    const logger = new Logger(info.project, this.config)
+    const logger = new Logger(this.config, info.project)
     const templateSettings = this.getTemplateSettings(this.config, info.project)
     const service = new MySqlLanguageService({
       host: info.serverHost,
@@ -46,7 +47,7 @@ class MySqlPlugin {
         return config.tags
       },
       enableForStringWithSubstitutions: true,
-      getSubstitutions: (node: ts.TemplateExpression): string => {
+      getSubstitutions: (node: ts.TemplateExpression): TemplateSubstitutions => {
         const program = project.getLanguageService().getProgram()
         const checker = program?.getTypeChecker()
         return getTemplateSubstitutions(checker, node)

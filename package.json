@@ -19,13 +19,9 @@
   "main": "dist/index.js",
   "scripts": {
     "pub": "np",
-    "test-go": "go test -race ./src/lib/sql-parser -count=1",
-    "test-ts": "jest --forceExit --runInBand",
-    "test": "yarn test-ts && yarn test-go",
+    "test": "jest --forceExit --runInBand",
     "lint": "eslint src/**/*.ts",
-    "build-go": "ts-node scripts/build-go.ts",
-    "build-ts": "tsc",
-    "build": "yarn build-ts && yarn build-go",
+    "build": "tsc",
     "watch": "tsc -b -w",
     "clean": "rm -rf dist"
   },
@@ -77,19 +73,23 @@
     "np": "^5.2.1",
     "prettier": "^1.19.1",
     "ts-jest": "^24.3.0",
-    "ts-morph": "^6.0.2",
     "ts-node": "^8.5.4"
   },
   "dependencies": {
+    "antlr4-c3": "^1.1.12",
+    "antlr4ts": "^0.5.0-alpha.3",
+    "antlr4ts-cli": "^0.5.0-alpha.3",
     "cross-spawn": "^7.0.1",
     "leven": "^3.1.0",
     "markdown-table": "^1.1.3",
-    "mysql-parse": "^2.0.8",
     "mysql2": "^2.1.0",
     "smart-truncate": "^1.0.1",
+    "ts-mysql-analyzer": "^0.3.0",
+    "ts-mysql-autocomplete": "^0.0.2",
+    "ts-mysql-parser": "^0.1.2",
     "ts-simple-type": "^0.3.7",
     "typescript": "^3.7.4",
-    "typescript-template-language-service-decorator": "segmentio/typescript-template-language-service-decorator",
+    "typescript-template-language-service-decorator": "git://github.com/segmentio/typescript-template-language-service-decorator.git#master",
     "vscode": "^1.1.36"
   }
 }

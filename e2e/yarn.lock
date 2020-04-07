@@ -31,6 +31,23 @@ ansicolors@~0.3.2:
   resolved "https://registry.yarnpkg.com/ansicolors/-/ansicolors-0.3.2.tgz#665597de86a9ffe3aa9bfbe6cae5c6ea426b4979"
   integrity sha1-ZlWX3oap/+Oqm/vmyuXG6kJrSXk=
 
+antlr4-c3@^1.1.12:
+  version "1.1.12"
+  resolved "https://registry.yarnpkg.com/antlr4-c3/-/antlr4-c3-1.1.12.tgz#4233c082d38c4017852ab9acbd5f3730632dced9"
+  integrity sha512-X+LGLKlYmFFGgGPigyYkQ63FIpvABFwcnwIy6NBDvTkrRXpXyxpucoMpN4SGWpYKXT1gkQrkWc57dPXcs/MOEg==
+  dependencies:
+    antlr4ts "^0.5.0-alpha.3"
+
+antlr4ts-cli@^0.5.0-alpha.3:
+  version "0.5.0-alpha.3"
+  resolved "https://registry.yarnpkg.com/antlr4ts-cli/-/antlr4ts-cli-0.5.0-alpha.3.tgz#1f581b2a3c840d3921a2f3b1e739e48c7e7c18cd"
+  integrity sha512-i6oyxfaXU6qnw4HgyeSIsOLlsvT7zU3vmenoJKFNVFP1QNodtJMZYpnyxc8TmOFpJs7fEoWanLavSSDEmcCZBQ==
+
+antlr4ts@^0.5.0-alpha.3:
+  version "0.5.0-alpha.3"
+  resolved "https://registry.yarnpkg.com/antlr4ts/-/antlr4ts-0.5.0-alpha.3.tgz#fa6d39d88d6b96341a8afef45867af9abcb38766"
+  integrity sha512-La89tKkGcHFIVuruv4Bm1esc3zLmES2NOTEwwNS1pudz+zx/0FNqQeUu9p48i9/QHKPVqjN87LB+q3buTg7oDQ==
+
 asn1@~0.2.3:
   version "0.2.4"
   resolved "https://registry.yarnpkg.com/asn1/-/asn1-0.2.4.tgz#8d2475dfab553bb33e77b54e59e880bb8ce23136"
@@ -534,11 +551,6 @@ ms@^2.1.1:
   resolved "https://registry.yarnpkg.com/ms/-/ms-2.1.2.tgz#d09d1f357b443f493382a8eb3ccd183872ae6009"
   integrity sha512-sGkPx+VjMtmA6MX27oA4FBFELFCZZ4S4XqeGOXCv68tT+jb3vk/RyaKWP0PTKyWtmLSM0b+adUTEvbs1PEaH2w==
 
-mysql-parse@^2.0.8:
-  version "2.0.8"
-  resolved "https://registry.yarnpkg.com/mysql-parse/-/mysql-parse-2.0.8.tgz#2d34341052564703a327e81f5c3542230d7fbbe6"
-  integrity sha512-FhI7wdiH9RXD/fSSP/2c5g7qRHFcD6kDPDZXBnuv4eTC5h1iAZFQQxfxCdUlnaVdVwa8r833YZIE/AquvF5luA==
-
 mysql2@^2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/mysql2/-/mysql2-2.1.0.tgz#55ecfd4353114c148cc4c253192dbbfd000e6642"
@@ -755,19 +767,87 @@ tough-cookie@~2.4.3:
     psl "^1.1.24"
     punycode "^1.4.1"
 
-"ts-mysql-plugin@file:./..":
-  version "0.1.6"
+ts-antlr4-scanner@^0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/ts-antlr4-scanner/-/ts-antlr4-scanner-0.1.0.tgz#77b83faef1ea5c8b2c84bed8eafd68f4018f78cc"
+  integrity sha512-GtmXyQ6PNIiUm3/t7mU9qUyI9y2JH4/JmdjQ2VJTS6+60KzePem81vzGG79hvwwu2N3JNIDI5ZR7/2qyMuV2TA==
   dependencies:
+    antlr4ts "^0.5.0-alpha.3"
+    typescript "^3.8.3"
+
+ts-mysql-analyzer@^0.3.0:
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/ts-mysql-analyzer/-/ts-mysql-analyzer-0.3.0.tgz#1658a341ad636f50678e7fd0a53677cab866a27f"
+  integrity sha512-IVeOADwbX4fWGiavc9SNwnJiFA0JsXynNpjeEFG5/KKSBMS3EPyxNTOGYNn9sy9GWgrUMoVVxOXoieE+SEyyvQ==
+  dependencies:
+    leven "^3.1.0"
+    ts-mysql-parser "^0.2.0"
+    ts-mysql-schema "^0.0.3"
+    typescript "^3.8.3"
+
+ts-mysql-autocomplete@^0.0.2:
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/ts-mysql-autocomplete/-/ts-mysql-autocomplete-0.0.2.tgz#60d14a78a3c7138af5ae2bb373617d188a4923b9"
+  integrity sha512-QJGR+2QtcRhAxgq+az1wICfvFRvizbVN3EYMgq/iK6c9ADQUnIoh5PjIQKByWamb3TdgpBRc0P8O687ySaUypA==
+  dependencies:
+    antlr4-c3 "^1.1.12"
+    antlr4ts "^0.5.0-alpha.3"
+    ts-antlr4-scanner "^0.1.0"
+    ts-mysql-parser "^0.2.0"
+    ts-mysql-schema "^0.0.3"
+    typescript "^3.8.3"
+
+ts-mysql-parser@^0.1.2:
+  version "0.1.3"
+  resolved "https://registry.yarnpkg.com/ts-mysql-parser/-/ts-mysql-parser-0.1.3.tgz#bd191495e98944c4f3cc31359bf1471d0f128716"
+  integrity sha512-+BEwfRqk6mChrvKZShcIT/SrTXykj9BRvstfd/YXsd0Jv844y4eVylJ7KT7tqtIuzA1eQkOMNCbQSeUZZt14ww==
+  dependencies:
+    antlr4ts "^0.5.0-alpha.3"
+    typescript "^3.8.3"
+
+ts-mysql-parser@^0.2.0:
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/ts-mysql-parser/-/ts-mysql-parser-0.2.0.tgz#334a67e1f9f0c633054e889ff7fdae33841208ee"
+  integrity sha512-bqCDPxl8/gWjsXEYgOuI7YzieV/3hldvL9AK2RfPfYKVGdz+280ZLP9I3oYAZyty3BFSm62OB255zvOq1pdkXg==
+  dependencies:
+    antlr4ts "^0.5.0-alpha.3"
+    typescript "^3.8.3"
+
+"ts-mysql-plugin@file:./..":
+  version "0.1.7"
+  dependencies:
+    antlr4-c3 "^1.1.12"
+    antlr4ts "^0.5.0-alpha.3"
+    antlr4ts-cli "^0.5.0-alpha.3"
     cross-spawn "^7.0.1"
     leven "^3.1.0"
     markdown-table "^1.1.3"
-    mysql-parse "^2.0.8"
     mysql2 "^2.1.0"
     smart-truncate "^1.0.1"
+    ts-mysql-analyzer "^0.3.0"
+    ts-mysql-autocomplete "^0.0.2"
+    ts-mysql-parser "^0.1.2"
     ts-simple-type "^0.3.7"
     typescript "^3.7.4"
-    typescript-template-language-service-decorator segmentio/typescript-template-language-service-decorator
+    typescript-template-language-service-decorator "git://github.com/segmentio/typescript-template-language-service-decorator.git#master"
     vscode "^1.1.36"
+
+ts-mysql-schema@^0.0.3:
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/ts-mysql-schema/-/ts-mysql-schema-0.0.3.tgz#87aea5363cd0478a3de43fd2ebe5d6375e30f3c7"
+  integrity sha512-6OrVcdQl6KNZLkQNBFniWBVSSaayQRFVXhMA9nwaoaJKEVHHLTOJJHMKWE44cDgxlPIhW287hksBlvid9MNz9g==
+  dependencies:
+    mysql2 "^2.1.0"
+    sql-template-tag "^3.3.0"
+    ts-mysql-uri "^0.0.2"
+    typescript "^3.8.3"
+
+ts-mysql-uri@^0.0.2:
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/ts-mysql-uri/-/ts-mysql-uri-0.0.2.tgz#342bfbcee9ec31faac440a59b608eade87d596d3"
+  integrity sha512-lB7WTEUoRLxqjL1/Gcl+cJrNnbvC6VKhkduMsTOFvn2bMEuq6qh23FRMQR9tHk3Ec/tmbhUpOd+GrEp4UwYpWg==
+  dependencies:
+    typescript "^3.8.3"
 
 ts-simple-type@^0.3.7:
   version "0.3.7"
@@ -786,14 +866,19 @@ tweetnacl@^0.14.3, tweetnacl@~0.14.0:
   resolved "https://registry.yarnpkg.com/tweetnacl/-/tweetnacl-0.14.5.tgz#5ae68177f192d4456269d108afa93ff8743f4f64"
   integrity sha1-WuaBd/GS1EViadEIr6k/+HQ/T2Q=
 
-typescript-template-language-service-decorator@segmentio/typescript-template-language-service-decorator:
+"typescript-template-language-service-decorator@git://github.com/segmentio/typescript-template-language-service-decorator.git#master":
   version "2.2.0"
-  resolved "https://codeload.github.com/segmentio/typescript-template-language-service-decorator/tar.gz/45cadc9310dc5870e4b7c5f16687ae85d1e35734"
+  resolved "git://github.com/segmentio/typescript-template-language-service-decorator.git#2a6c095038e0eae73acaa0f8a48b3f50a31c02f3"
 
 typescript@^3.1.6, typescript@^3.7.4:
   version "3.7.4"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.7.4.tgz#1743a5ec5fef6a1fa9f3e4708e33c81c73876c19"
   integrity sha512-A25xv5XCtarLwXpcDNZzCGvW2D1S3/bACratYBx2sax8PefsFhlYmkQicKHvpYflFS8if4zne5zT5kpJ7pzuvw==
+
+typescript@^3.8.3:
+  version "3.8.3"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.8.3.tgz#409eb8544ea0335711205869ec458ab109ee1061"
+  integrity sha512-MYlEfn5VrLNsgudQTVJeNaQFUAI7DkhnOjdpAp4T+ku1TfQClewlbSuTVHiA+8skNBgaf02TL/kLOvig4y3G8w==
 
 uri-js@^4.2.2:
   version "4.2.2"
