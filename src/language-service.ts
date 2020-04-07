@@ -2,9 +2,7 @@ import { TemplateLanguageService, TemplateContext } from 'typescript-template-la
 import generateDocumentation from './lib/documentation/generate'
 import { server } from 'typescript/lib/tsserverlibrary'
 import {
-  SymbolDisplayPart,
   ScriptElementKind,
-  DiagnosticCategory,
   Diagnostic,
   QuickInfo,
   LineAndCharacter,
@@ -13,29 +11,19 @@ import {
 } from 'typescript/lib/tsserverlibrary'
 import smartTruncate from 'smart-truncate'
 import markdownTable from 'markdown-table'
-import { keywords } from './constants/keywords'
-import getWordAtOffset from './lib/get-word-at-offset'
-import { parseUri } from 'mysql-parse'
-import autocorrect from './lib/autocorrect'
-import Analyzer from './analyzer'
 import { Configuration } from './configuration'
 import Logger from './logger'
-import Schema, { Tables, Table, Columns, Column } from './schema'
-
-interface CreateDiagnosticInput {
-  category: DiagnosticCategory
-  message: string
-  length: number
-  start: number
-  code: number
-}
-
-interface CreateQuickInfoInput {
-  header?: SymbolDisplayPart[]
-  docs?: SymbolDisplayPart[]
-  startOffset: number
-  wordAtHover: string
-}
+import { MySQLAutocomplete } from 'ts-mysql-autocomplete'
+import { MySQLSchema, Schema, SchemaColumn } from 'ts-mysql-schema'
+import { mapSeverity } from './lib/map-severity'
+import { MySQLAnalyzer } from 'ts-mysql-analyzer'
+import MySQLParser, {
+  ReferenceType,
+  TableReference,
+  ColumnReference,
+  KeywordReference,
+  FunctionReference
+} from 'ts-mysql-parser'
 
 interface ResponseMessage {
   type: string
@@ -52,7 +40,7 @@ function padding(amount: number): string {
   return '&nbsp;'.repeat(amount)
 }
 
-function createRow(column: Column): string[] {
+function createRow(column: SchemaColumn): string[] {
   const pad = padding(5)
   return [
     truncate(column.name),
@@ -65,6 +53,17 @@ function createRow(column: Column): string[] {
   ]
 }
 
+function getKind(type: 'keyword' | 'table' | 'column'): ScriptElementKind {
+  switch (type) {
+    case 'keyword':
+      return ScriptElementKind.keyword
+    case 'table':
+      return ScriptElementKind.classElement
+    case 'column':
+      return ScriptElementKind.memberVariableElement
+  }
+}
+
 interface MySqlLanguageServiceOptions {
   host: server.ServerHost
   config: Configuration
@@ -73,32 +72,44 @@ interface MySqlLanguageServiceOptions {
 
 export default class MySqlLanguageService implements TemplateLanguageService {
   private readonly host: server.ServerHost
-  private readonly analyzer: Analyzer
   private readonly logger: Logger
-  private readonly databaseName?: string
-  private readonly schema?: Schema
   private readonly config: Configuration
+  private autocompleter: MySQLAutocomplete
+  private analyzer: MySQLAnalyzer
+  private schema?: Schema
 
   public constructor({ host, logger, config }: MySqlLanguageServiceOptions) {
-    this.analyzer = new Analyzer()
     this.config = config
     this.logger = logger
     this.host = host
 
-    const { databaseUri } = config
-    if (databaseUri) {
-      try {
-        const { database: databaseName } = parseUri(databaseUri)
-        this.databaseName = databaseName
-        this.schema = new Schema({ databaseName, databaseUri, logger })
-        this.schema.on('schemaLoaded', this.onSchemaLoaded.bind(this))
-      } catch (e) {
-        this.logger.log('Failed to parse provided database URI: ' + e)
-      }
+    const parserOptions = {
+      version: this.config.mySQLVersion
     }
+
+    this.autocompleter = new MySQLAutocomplete({ parserOptions })
+    this.analyzer = new MySQLAnalyzer({ parserOptions })
+
+    const { databaseUri } = config
+    if (!databaseUri) {
+      return
+    }
+
+    const mySQLSchema = new MySQLSchema({ uri: databaseUri })
+    mySQLSchema
+      .getSchema()
+      .then(schema => {
+        this.schema = schema
+        this.autocompleter = new MySQLAutocomplete({ parserOptions, schema, uppercaseKeywords: true })
+        this.analyzer = new MySQLAnalyzer({ parserOptions, schema })
+        this.onSchemaLoaded()
+      })
+      .catch(err => {
+        this.logger.log('Failed to get schema: ' + err)
+      })
   }
 
-  // Send `schemaLoadingFinish` to client for testing purposes.
+  // For testing purposes, tell client the schema has loaded
   private onSchemaLoaded(): void {
     const message = {
       type: 'event',
@@ -107,7 +118,7 @@ export default class MySqlLanguageService implements TemplateLanguageService {
     this.sendResponse(message)
   }
 
-  // Send a response to the client.
+  // For testing purposes, send response to client
   private sendResponse(message: ResponseMessage): void {
     const json = JSON.stringify(message)
     const len = Buffer.byteLength(json, 'utf8')
@@ -115,28 +126,21 @@ export default class MySqlLanguageService implements TemplateLanguageService {
     this.host.write(formattedMessage)
   }
 
-  private createDiagnostic(context: TemplateContext, input: CreateDiagnosticInput): Diagnostic {
-    return {
-      file: context.node.getSourceFile(),
-      source: this.config.pluginName,
-      messageText: input.message,
-      category: input.category,
-      length: input.length,
-      start: input.start,
-      code: input.code
-    }
-  }
-
-  private createQuickInfo(input: CreateQuickInfoInput): QuickInfo {
+  private createQuickInfo(start: number, text: string, docs: string): QuickInfo {
     return {
       kind: ScriptElementKind.string,
       kindModifiers: '',
       textSpan: {
-        start: input.startOffset,
-        length: input.wordAtHover.length
+        start,
+        length: text.length
       },
-      displayParts: input.header,
-      documentation: input.docs,
+      displayParts: [],
+      documentation: [
+        {
+          kind: '',
+          text: docs
+        }
+      ],
       tags: []
     }
   }
@@ -161,316 +165,124 @@ export default class MySqlLanguageService implements TemplateLanguageService {
     }
 
     const offset = context.toOffset(position)
-    const wordWithOffset = getWordAtOffset(offset, context.text)
-    if (!wordWithOffset) {
+    const parser = new MySQLParser({ version: this.config.mySQLVersion })
+    const statements = parser.splitStatements(context.text)
+
+    const statement = parser.getStatementAtOffset(statements, offset)
+    if (!statement) {
       return
     }
 
-    const { word, startOffset } = wordWithOffset
-    const wordAtHover = word.toLowerCase()
-    const docs: SymbolDisplayPart[] = []
-    const header: SymbolDisplayPart[] = []
+    const result = parser.parse(statement.text)
 
-    if (keywords.includes(wordAtHover)) {
-      const documentation = generateDocumentation(wordAtHover)
-      docs.push({ kind: '', text: documentation })
+    const node = parser.getNodeAtOffset(result, offset - statement.start)
+    if (!node) {
+      return
     }
 
-    const result = this.analyzer.getParseResult(context.text)
-    if (!result || !result.statements || !this.schema) {
-      return this.createQuickInfo({
-        startOffset,
-        wordAtHover,
-        header,
-        docs
-      })
+    const { start: nodeStart, type } = node
+    const start = statement.start + nodeStart
+
+    if (type === ReferenceType.KeywordRef) {
+      const reference = node as KeywordReference
+      const keyword = reference.keyword
+      return this.createQuickInfo(start, keyword, generateDocumentation(keyword, 'keyword'))
+    }
+
+    if (type === ReferenceType.FunctionRef) {
+      const reference = node as FunctionReference
+      const fn = reference.function
+      return this.createQuickInfo(start, fn, generateDocumentation(fn, 'function'))
     }
 
     const pad = padding(5)
     const tableHeader = ['Name', pad, 'SQL Type', pad, 'TS Type', pad, 'Optional']
-    const schemaTables = this.schema.getTables()
+    const schemaTables = this.schema?.tables || []
 
-    const foundColumns = new Map()
-    const foundTables = new Map()
-
-    result.statements.forEach(statement => {
-      const queryTables = statement.tables
-
-      const queryTable = queryTables.find(t => t.name === word)
-      if (queryTable) {
-        const schemaTable = schemaTables.find(t => t.name === queryTable.name)
-        // make sure we don't add twice
-        if (schemaTable && !foundTables.get(schemaTable.name)) {
-          foundTables.set(schemaTable.name, true)
-          const rows = schemaTable.columns.map(column => createRow(column))
-          docs.push({ kind: '', text: markdownTable([tableHeader, ...rows]) })
-        }
+    if (type === ReferenceType.TableRef) {
+      const reference = node as TableReference
+      const schemaTable = schemaTables.find(t => t.name === reference.table)
+      if (schemaTable) {
+        const rows = schemaTable.columns.map(column => createRow(column))
+        return this.createQuickInfo(start, schemaTable.name, markdownTable([tableHeader, ...rows]))
       }
+    }
 
-      let schemaColumn: Column | null = null
-
-      for (const queryTable of queryTables) {
-        const schemaTable = schemaTables.find(t => t.name === queryTable.name)
-        if (!schemaTable) {
-          continue
-        }
-
-        const column = schemaTable.columns.find(c => c.name === word)
-        if (!column) {
-          continue
-        }
-
-        // make sure we don't add twice
-        const alreadyFound = foundColumns.get(`${schemaTable.name}:${column.name}`)
-        if (!alreadyFound) {
-          foundColumns.set(`${schemaTable.name}:${column.name}`, true)
-          schemaColumn = column
-        }
-        break
+    if (type === ReferenceType.ColumnRef) {
+      const reference = node as ColumnReference
+      const schemaTable = schemaTables.find(t => t.name === reference.tableReference?.table)
+      const schemaColumn = schemaTable?.columns.find(c => c.name === reference.column)
+      if (!schemaColumn) {
+        return
       }
-
-      if (schemaColumn) {
-        const row = createRow(schemaColumn)
-        docs.push({ kind: '', text: markdownTable([tableHeader, row]) })
-      }
-    })
-
-    return this.createQuickInfo({
-      startOffset,
-      wordAtHover,
-      header,
-      docs
-    })
+      return this.createQuickInfo(start, schemaColumn.name, markdownTable([tableHeader, createRow(schemaColumn)]))
+    }
   }
 
-  public getCompletionsAtPosition(context: TemplateContext): CompletionInfo {
-    if (this.hasFileIgnoreComment(context)) {
-      return {
-        entries: [],
-        isNewIdentifierLocation: false,
-        isGlobalCompletion: false,
-        isMemberCompletion: false
-      }
-    }
-
-    const keywordEntries: CompletionEntry[] = keywords.map(
-      (keyword: string): CompletionEntry => {
-        return {
-          name: keyword.toUpperCase(),
-          kind: ScriptElementKind.keyword,
-          kindModifiers: '',
-          sortText: keyword
-        }
-      }
-    )
-
-    if (!this.schema) {
-      return {
-        entries: keywordEntries,
-        isNewIdentifierLocation: false,
-        isGlobalCompletion: false,
-        isMemberCompletion: false
-      }
-    }
-
-    const schemaTables = this.schema.getTables()
-    const tableEntries = schemaTables.map(
-      (table: Table): CompletionEntry => {
-        return {
-          name: table.name,
-          kind: ScriptElementKind.classElement,
-          kindModifiers: '',
-          sortText: table.name
-        }
-      }
-    )
-
-    const result = this.analyzer.getParseResult(context.text)
-    let columns: Columns = []
-
-    if (result) {
-      result.statements.forEach(statement => {
-        const queryTables = statement.tables
-        queryTables.forEach(queryTable => {
-          const { name } = queryTable
-          const schemaTable = schemaTables.find(t => t.name === name)
-          if (schemaTable) {
-            columns = columns.concat(schemaTable.columns)
-          }
-        })
-      })
-    }
-
-    const columnEntries = columns.map(
-      (column: Column): CompletionEntry => {
-        return {
-          name: column.name,
-          kind: ScriptElementKind.memberVariableElement,
-          kindModifiers: '',
-          sortText: column.name
-        }
-      }
-    )
-
-    return {
-      entries: tableEntries.concat(columnEntries).concat(keywordEntries),
+  public getCompletionsAtPosition(context: TemplateContext, position: LineAndCharacter): CompletionInfo {
+    const completionInfo: CompletionInfo = {
+      entries: [],
       isNewIdentifierLocation: false,
       isGlobalCompletion: false,
       isMemberCompletion: false
     }
+
+    if (this.hasFileIgnoreComment(context)) {
+      return completionInfo
+    }
+
+    const offset = context.toOffset(position)
+    const parser = new MySQLParser({ version: this.config.mySQLVersion })
+    const statements = parser.splitStatements(context.text)
+    const statement = parser.getStatementAtOffset(statements, offset)
+    if (!statement) {
+      return completionInfo
+    }
+
+    const candidates = this.autocompleter.autocomplete(statement.text, offset - statement.start)
+
+    completionInfo.entries = candidates.map(
+      ({ text, type }): CompletionEntry => {
+        return {
+          name: text,
+          kind: getKind(type),
+          kindModifiers: '',
+          sortText: text
+        }
+      }
+    )
+
+    return completionInfo
   }
 
   public getSemanticDiagnostics(context: TemplateContext): Diagnostic[] {
-    this.logger.log('getSemanticDiagnostics')
-
-    const diagnostics: Diagnostic[] = []
-
     if (this.hasFileIgnoreComment(context)) {
-      return diagnostics
+      return []
     }
 
-    let tables: Tables = []
-    if (this.schema) {
-      tables = this.schema.getTables()
-    }
+    const diagnostics = this.analyzer.analyze(context.text) || []
 
-    try {
-      this.analyzer.analyze(context, tables)
-    } catch (error) {
-      const { name, data } = error
+    return diagnostics.map(diagnostic => {
+      const substitution = context.getSubstitution(diagnostic.start)
+      const stop = substitution ? substitution.oldStop : diagnostic.stop + 1
+      let start = diagnostic.start
+      let length = stop - start
 
-      switch (name) {
-        case 'EmptyQueryError':
-          diagnostics.push(
-            this.createDiagnostic(context, {
-              message: 'Empty MySQL query.',
-              category: DiagnosticCategory.Error,
-              length: 2,
-              start: -1, // special case to highlight enclosing backticks
-              code: error.code
-            })
-          )
-          break
-        case 'SyntaxErrorGeneric':
-          diagnostics.push(
-            this.createDiagnostic(context, {
-              message: 'MySQL Syntax Error.',
-              category: DiagnosticCategory.Error,
-              length: data.end - data.start,
-              start: data.start,
-              code: error.code
-            })
-          )
-          break
-        case 'SyntaxErrorKeyword':
-          diagnostics.push(
-            this.createDiagnostic(context, {
-              message: `MySQL Syntax Error. The problem is near the word '${data.keyword}', which is a reserved keyword. Are you missing a semicolon? Did you forget to backtick a column name?`,
-              category: DiagnosticCategory.Error,
-              length: data.end - data.start,
-              start: data.start - 1,
-              code: error.code
-            })
-          )
-          break
-        case 'SyntaxErrorNotKeyword': {
-          const word = data.unidentifiedWord
-          const correction = this.getCorrection(word.toLowerCase(), keywords)
-          const messageParts = [`MySQL Syntax Error. Unidentified word '${word}'.`]
-          if (correction) {
-            messageParts.push(` Did you mean '${correction.toUpperCase()}'?`)
-          }
-
-          diagnostics.push(
-            this.createDiagnostic(context, {
-              message: messageParts.join(''),
-              category: DiagnosticCategory.Error,
-              length: data.end - data.start,
-              start: data.start - 1,
-              code: error.code
-            })
-          )
-          break
-        }
-        case 'SemanticErrorBadTable': {
-          const tableNames = tables.map(t => t.name)
-          const correction = this.getCorrection(data.table.toLowerCase(), tableNames)
-          const messageParts = [`Table '${data.table}' does not exist in database '${this.databaseName}'.`]
-          if (correction) {
-            messageParts.push(` Did you mean '${correction}'?`)
-          }
-
-          diagnostics.push(
-            this.createDiagnostic(context, {
-              message: messageParts.join(''),
-              category: DiagnosticCategory.Warning,
-              length: data.table.length,
-              start: data.start - 1,
-              code: error.code
-            })
-          )
-          break
-        }
-        case 'SemanticErrorBadColumn': {
-          const table = tables.find(t => t.name === data.table)
-          const columnNames = table?.columns.map(c => c.name) || []
-          const correction = this.getCorrection(data.column.toLowerCase(), columnNames)
-          const messageParts = [`Column '${data.column}' does not exist in table '${data.table}'.`]
-          if (correction) {
-            messageParts.push(` Did you mean '${correction}'?`)
-          }
-
-          diagnostics.push(
-            this.createDiagnostic(context, {
-              message: messageParts.join(''),
-              category: DiagnosticCategory.Warning,
-              length: data.column.length,
-              start: data.start - 1,
-              code: error.code
-            })
-          )
-          break
-        }
-        case 'SemanticErrorBadColumnValue': {
-          diagnostics.push(
-            this.createDiagnostic(context, {
-              message: `Type ${data.receivedType} is not assignable to type ${data.expectedType}`,
-              category: DiagnosticCategory.Warning,
-              length: data.length,
-              start: data.start - 1,
-              code: error.code
-            })
-          )
-          break
-        }
-        case 'SemanticErrorColumnCountDoesNotMatchRowCount': {
-          diagnostics.push(
-            this.createDiagnostic(context, {
-              message: 'Column count does not match row count.',
-              category: DiagnosticCategory.Warning,
-              length: data.length,
-              start: data.start,
-              code: error.code
-            })
-          )
-          break
-        }
+      // special case to highlight enclosing backticks
+      if (!context.text) {
+        start = -1
+        length = 2
       }
-    }
 
-    return diagnostics
-  }
-
-  private getCorrection(near: string, keywords: string[]): string {
-    const correction = autocorrect(near, keywords)
-    if (!correction) {
-      return ''
-    }
-
-    if (correction === near) {
-      return ''
-    }
-
-    return correction
+      return {
+        file: context.node.getSourceFile(),
+        source: this.config.pluginName,
+        messageText: diagnostic.message,
+        category: mapSeverity(diagnostic.severity),
+        code: diagnostic.code,
+        length,
+        start
+      }
+    })
   }
 }

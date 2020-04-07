@@ -19,7 +19,7 @@ describe('Diagnostics', () => {
     expect(error).toMatchInlineSnapshot(`
       Object {
         "category": "error",
-        "code": 1001,
+        "code": 1000,
         "end": Object {
           "line": 2,
           "offset": 7,
@@ -29,7 +29,7 @@ describe('Diagnostics', () => {
           "line": 2,
           "offset": 5,
         },
-        "text": "Empty MySQL query.",
+        "text": "MySQL query is empty.",
       }
     `)
   })
@@ -39,7 +39,7 @@ describe('Diagnostics', () => {
     expect(error).toMatchInlineSnapshot(`
       Object {
         "category": "error",
-        "code": 1001,
+        "code": 1000,
         "end": Object {
           "line": 2,
           "offset": 7,
@@ -49,7 +49,7 @@ describe('Diagnostics', () => {
           "line": 2,
           "offset": 5,
         },
-        "text": "Empty MySQL query.",
+        "text": "MySQL query is empty.",
       }
     `)
   })
@@ -59,7 +59,7 @@ describe('Diagnostics', () => {
     expect(error).toMatchInlineSnapshot(`
       Object {
         "category": "error",
-        "code": 1004,
+        "code": 1002,
         "end": Object {
           "line": 2,
           "offset": 11,
@@ -69,7 +69,7 @@ describe('Diagnostics', () => {
           "line": 2,
           "offset": 6,
         },
-        "text": "MySQL Syntax Error. Unidentified word 'SELEC'. Did you mean 'SELECT'?",
+        "text": "Extraneous input \\"SELEC\\" found, expecting EOF, BEGIN, CACHE, CHECKSUM, COMMIT",
       }
     `)
   })
@@ -79,7 +79,7 @@ describe('Diagnostics', () => {
     expect(error).toMatchInlineSnapshot(`
       Object {
         "category": "warning",
-        "code": 1005,
+        "code": 1004,
         "end": Object {
           "line": 2,
           "offset": 25,
@@ -99,7 +99,7 @@ describe('Diagnostics', () => {
     expect(error).toMatchInlineSnapshot(`
       Object {
         "category": "warning",
-        "code": 1006,
+        "code": 1005,
         "end": Object {
           "line": 2,
           "offset": 16,
@@ -119,7 +119,7 @@ describe('Diagnostics', () => {
     expect(error).toMatchInlineSnapshot(`
       Object {
         "category": "warning",
-        "code": 1006,
+        "code": 1005,
         "end": Object {
           "line": 2,
           "offset": 34,
@@ -139,7 +139,7 @@ describe('Diagnostics', () => {
     expect(error).toMatchInlineSnapshot(`
       Object {
         "category": "error",
-        "code": 1004,
+        "code": 1002,
         "end": Object {
           "line": 2,
           "offset": 11,
@@ -149,7 +149,7 @@ describe('Diagnostics', () => {
           "line": 2,
           "offset": 6,
         },
-        "text": "MySQL Syntax Error. Unidentified word 'CREAT'. Did you mean 'CREATE'?",
+        "text": "Extraneous input \\"CREAT\\" found, expecting EOF, BEGIN, CACHE, CHECKSUM, COMMIT",
       }
     `)
   })
@@ -159,7 +159,7 @@ describe('Diagnostics', () => {
     expect(error).toMatchInlineSnapshot(`
       Object {
         "category": "error",
-        "code": 1003,
+        "code": 1002,
         "end": Object {
           "line": 2,
           "offset": 30,
@@ -169,7 +169,7 @@ describe('Diagnostics', () => {
           "line": 2,
           "offset": 28,
         },
-        "text": "MySQL Syntax Error. The problem is near the word 'in', which is a reserved keyword. Are you missing a semicolon? Did you forget to backtick a column name?",
+        "text": "\\"in\\" is not valid at this position",
       }
     `)
   })
@@ -179,7 +179,7 @@ describe('Diagnostics', () => {
     expect(error).toMatchInlineSnapshot(`
       Object {
         "category": "error",
-        "code": 1004,
+        "code": 1002,
         "end": Object {
           "line": 2,
           "offset": 33,
@@ -189,7 +189,7 @@ describe('Diagnostics', () => {
           "line": 2,
           "offset": 28,
         },
-        "text": "MySQL Syntax Error. Unidentified word 'integ'. Did you mean 'INDEX'?",
+        "text": "\\"integ\\" is not valid at this position",
       }
     `)
   })
@@ -199,7 +199,7 @@ describe('Diagnostics', () => {
     expect(error).toMatchInlineSnapshot(`
       Object {
         "category": "error",
-        "code": 1004,
+        "code": 1002,
         "end": Object {
           "line": 2,
           "offset": 8,
@@ -209,7 +209,7 @@ describe('Diagnostics', () => {
           "line": 2,
           "offset": 6,
         },
-        "text": "MySQL Syntax Error. Unidentified word 'US'. Did you mean 'AS'?",
+        "text": "\\"US\\" is not valid at this position",
       }
     `)
   })
@@ -221,7 +221,7 @@ describe('Diagnostics', () => {
     expect(error).toMatchInlineSnapshot(`
       Object {
         "category": "warning",
-        "code": 1007,
+        "code": 1006,
         "end": Object {
           "line": 2,
           "offset": 45,
@@ -229,9 +229,9 @@ describe('Diagnostics', () => {
         "source": "ts-mysql-plugin",
         "start": Object {
           "line": 2,
-          "offset": 33,
+          "offset": 38,
         },
-        "text": "Type boolean is not assignable to type string",
+        "text": "Type boolean is not assignable to type string.",
       }
     `)
   })
@@ -241,17 +241,17 @@ describe('Diagnostics', () => {
     expect(error).toMatchInlineSnapshot(`
       Object {
         "category": "warning",
-        "code": 1007,
+        "code": 1006,
         "end": Object {
           "line": 2,
-          "offset": 38,
+          "offset": 42,
         },
         "source": "ts-mysql-plugin",
         "start": Object {
           "line": 2,
-          "offset": 33,
+          "offset": 38,
         },
-        "text": "Type boolean is not assignable to type string",
+        "text": "Type boolean is not assignable to type string.",
       }
     `)
   })
@@ -261,7 +261,7 @@ describe('Diagnostics', () => {
     expect(error).toMatchInlineSnapshot(`
       Object {
         "category": "warning",
-        "code": 1007,
+        "code": 1006,
         "end": Object {
           "line": 2,
           "offset": 45,
@@ -269,9 +269,9 @@ describe('Diagnostics', () => {
         "source": "ts-mysql-plugin",
         "start": Object {
           "line": 2,
-          "offset": 33,
+          "offset": 38,
         },
-        "text": "Type null is not assignable to type string",
+        "text": "Type null is not assignable to type string.",
       }
     `)
   })
@@ -281,17 +281,17 @@ describe('Diagnostics', () => {
     expect(error).toMatchInlineSnapshot(`
       Object {
         "category": "warning",
-        "code": 1007,
+        "code": 1006,
         "end": Object {
           "line": 2,
-          "offset": 38,
+          "offset": 42,
         },
         "source": "ts-mysql-plugin",
         "start": Object {
           "line": 2,
-          "offset": 33,
+          "offset": 38,
         },
-        "text": "Type null is not assignable to type string",
+        "text": "Type null is not assignable to type string.",
       }
     `)
   })
@@ -301,7 +301,7 @@ describe('Diagnostics', () => {
     expect(error).toMatchInlineSnapshot(`
       Object {
         "category": "warning",
-        "code": 1007,
+        "code": 1006,
         "end": Object {
           "line": 2,
           "offset": 42,
@@ -309,9 +309,9 @@ describe('Diagnostics', () => {
         "source": "ts-mysql-plugin",
         "start": Object {
           "line": 2,
-          "offset": 33,
+          "offset": 38,
         },
-        "text": "Type number is not assignable to type string",
+        "text": "Type number is not assignable to type string.",
       }
     `)
   })
@@ -321,57 +321,17 @@ describe('Diagnostics', () => {
     expect(error).toMatchInlineSnapshot(`
       Object {
         "category": "warning",
-        "code": 1007,
+        "code": 1006,
         "end": Object {
+          "line": 2,
+          "offset": 39,
+        },
+        "source": "ts-mysql-plugin",
+        "start": Object {
           "line": 2,
           "offset": 38,
         },
-        "source": "ts-mysql-plugin",
-        "start": Object {
-          "line": 2,
-          "offset": 33,
-        },
-        "text": "Type number is not assignable to type string",
-      }
-    `)
-  })
-
-  it(`returns correct diagnostic for query: ${'const someDate = new Date()\n sql`SELECT id FROM users WHERE id = ${someDate}`'}`, async () => {
-    const [error] = await send('const someDate = new Date()\n sql`SELECT id FROM users WHERE id = ${someDate}`')
-    expect(error).toMatchInlineSnapshot(`
-      Object {
-        "category": "warning",
-        "code": 1007,
-        "end": Object {
-          "line": 3,
-          "offset": 49,
-        },
-        "source": "ts-mysql-plugin",
-        "start": Object {
-          "line": 3,
-          "offset": 33,
-        },
-        "text": "Type date is not assignable to type string",
-      }
-    `)
-  })
-
-  it(`returns correct diagnostic for query: ${'sql`SELECT id FROM users WHERE id = ${new Date()}`'}`, async () => {
-    const [error] = await send('sql`SELECT id FROM users WHERE id = ${new Date()}`')
-    expect(error).toMatchInlineSnapshot(`
-      Object {
-        "category": "warning",
-        "code": 1007,
-        "end": Object {
-          "line": 2,
-          "offset": 38,
-        },
-        "source": "ts-mysql-plugin",
-        "start": Object {
-          "line": 2,
-          "offset": 33,
-        },
-        "text": "Type date is not assignable to type string",
+        "text": "Type number is not assignable to type string.",
       }
     `)
   })
@@ -386,10 +346,10 @@ describe('Diagnostics', () => {
     expect(error).toMatchInlineSnapshot(`
       Object {
         "category": "warning",
-        "code": 1008,
+        "code": 1003,
         "end": Object {
           "line": 2,
-          "offset": 50,
+          "offset": 51,
         },
         "source": "ts-mysql-plugin",
         "start": Object {
@@ -437,7 +397,7 @@ describe('Diagnostics', () => {
     expect(error).toMatchInlineSnapshot(`
       Object {
         "category": "warning",
-        "code": 1007,
+        "code": 1006,
         "end": Object {
           "line": 3,
           "offset": 56,
@@ -445,9 +405,9 @@ describe('Diagnostics', () => {
         "source": "ts-mysql-plugin",
         "start": Object {
           "line": 3,
-          "offset": 31,
+          "offset": 41,
         },
-        "text": "Type string is not assignable to type boolean",
+        "text": "Type string is not assignable to type boolean.",
       }
     `)
   })

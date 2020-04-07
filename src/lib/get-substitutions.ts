@@ -1,4 +1,5 @@
 import ts from 'typescript/lib/tsserverlibrary'
+import { TemplateSubstitutions, TemplateSubstitution } from 'typescript-template-language-service-decorator'
 import inferType from './infer-type'
 
 function resolveType(expression: ts.Expression, checker: ts.TypeChecker): string | null {
@@ -7,18 +8,17 @@ function resolveType(expression: ts.Expression, checker: ts.TypeChecker): string
 
   // in order to preserve the length of the original string, we need to make
   // substitutions that add up to that length
-
   switch (type) {
-    case 'null':
-      return 'null' + ' '.repeat(length - 1)
-    case 'boolean':
-      return 'true' + ' '.repeat(length - 1)
     case 'string':
       return `"${'x'.repeat(length + 1)}"`
     case 'number':
       return '1'.repeat(length + 3)
+    case 'boolean':
+      return 'true'
     case 'date':
       return `"${new Date().toISOString()}"`
+    case 'null':
+      return 'null'
     default:
       return null
   }
@@ -46,7 +46,14 @@ function getSpans(node: ts.TemplateExpression): Span[] {
   return spans
 }
 
-function fallback(span: Span): string {
+function getValue(expression: ts.Expression, span: Span, checker?: ts.TypeChecker): string {
+  if (checker) {
+    const value = resolveType(expression, checker)
+    if (value) {
+      return value
+    }
+  }
+
   const value = 'x'.repeat(span.end - span.start - 2)
   return `'${value}'`
 }
@@ -54,34 +61,34 @@ function fallback(span: Span): string {
 export default function getTemplateSubstitutions(
   checker: ts.TypeChecker | undefined,
   node: ts.TemplateExpression
-): string {
+): TemplateSubstitutions {
   const contents = node.getText().slice(1, -1)
   const spans = getSpans(node)
   const parts: string[] = []
   let lastIndex = 0
 
+  const substitutions: TemplateSubstitution[] = []
+
   for (const span of spans) {
     parts.push(contents.slice(lastIndex, span.start))
-    const expression = span.expression
 
-    // if there's a type checker, resolve the type
-    if (checker) {
-      const value = resolveType(expression, checker)
-      if (value) {
-        parts.push(value)
-      } else {
-        // fallback if we can't resolve the type
-        parts.push(fallback(span))
-      }
-    } else {
-      // else fallback
-      parts.push(fallback(span))
-    }
+    const expression = span.expression
+    const value = getValue(expression, span, checker)
+    parts.push(value)
+
+    substitutions.push({
+      start: span.start,
+      oldStop: span.end,
+      newStop: span.end + Math.abs(expression.getText().length - value.length)
+    })
 
     lastIndex = span.end
   }
 
   parts.push(contents.slice(lastIndex))
 
-  return parts.join('')
+  return {
+    text: parts.join(''),
+    substitutions
+  }
 }
