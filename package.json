@@ -1,6 +1,6 @@
 {
   "name": "ts-mysql-plugin",
-  "version": "0.1.7",
+  "version": "1.0.0",
   "description": "A typescript language service plugin that gives superpowers to SQL tagged template literals. Specifically aimed at the MySQL syntax.",
   "license": "MIT",
   "repository": "segmentio/ts-mysql-plugin",
