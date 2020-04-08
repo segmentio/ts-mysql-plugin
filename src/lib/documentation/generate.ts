@@ -12,7 +12,7 @@ function backtick(str?: string): string {
   return '`' + str + '`\n'
 }
 
-export default function generate(word: string, type: 'function' | 'keyword'): string {
+export function generateDocumentation(word: string, type: 'function' | 'keyword'): string {
   let topic: SQLTopic | undefined
 
   if (type === 'function') {

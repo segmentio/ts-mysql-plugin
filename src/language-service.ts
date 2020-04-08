@@ -1,7 +1,6 @@
 import { TemplateLanguageService, TemplateContext } from 'typescript-template-language-service-decorator'
-import generateDocumentation from './lib/documentation/generate'
-import { server } from 'typescript/lib/tsserverlibrary'
 import {
+  server,
   ScriptElementKind,
   Diagnostic,
   QuickInfo,
@@ -9,12 +8,8 @@ import {
   CompletionEntry,
   CompletionInfo
 } from 'typescript/lib/tsserverlibrary'
-import markdownTable from 'markdown-table'
-import { Configuration } from './configuration'
-import Logger from './logger'
 import { MySQLAutocomplete } from 'ts-mysql-autocomplete'
-import { MySQLSchema, Schema, SchemaColumn } from 'ts-mysql-schema'
-import { mapSeverity } from './lib/map-severity'
+import { MySQLSchema, Schema } from 'ts-mysql-schema'
 import { MySQLAnalyzer } from 'ts-mysql-analyzer'
 import MySQLParser, {
   ReferenceType,
@@ -23,31 +18,12 @@ import MySQLParser, {
   KeywordReference,
   FunctionReference
 } from 'ts-mysql-parser'
-
-interface ResponseMessage {
-  type: string
-  event: string
-}
-
-function padding(amount: number): string {
-  return '&nbsp;'.repeat(amount)
-}
-
-function createRow(column: SchemaColumn): string[] {
-  const pad = padding(5)
-  return [column.name, pad, column.sqlType, pad, column.tsType, pad, String(column.optional)]
-}
-
-function getKind(type: 'keyword' | 'table' | 'column'): ScriptElementKind {
-  switch (type) {
-    case 'keyword':
-      return ScriptElementKind.keyword
-    case 'table':
-      return ScriptElementKind.classElement
-    case 'column':
-      return ScriptElementKind.memberVariableElement
-  }
-}
+import { Configuration } from './configuration'
+import Logger from './logger'
+import { generateDocumentation } from './lib/documentation/generate'
+import { createMarkdownTable } from './lib/create-markdown-table'
+import { mapSeverity } from './lib/map-severity'
+import { getKind } from './lib/get-kind'
 
 interface MySqlLanguageServiceOptions {
   host: server.ServerHost
@@ -104,7 +80,7 @@ export default class MySqlLanguageService implements TemplateLanguageService {
   }
 
   // For testing purposes, send response to client
-  private sendResponse(message: ResponseMessage): void {
+  private sendResponse(message: { type: string; event: string }): void {
     const json = JSON.stringify(message)
     const len = Buffer.byteLength(json, 'utf8')
     const formattedMessage = `Content-Length: ${1 + len}\r\n\r\n${json}${this.host.newLine}`
@@ -180,16 +156,14 @@ export default class MySqlLanguageService implements TemplateLanguageService {
       return this.createQuickInfo(start, fn, generateDocumentation(fn, 'function'))
     }
 
-    const pad = padding(5)
-    const tableHeader = ['Name', pad, 'SQL Type', pad, 'TS Type', pad, 'Optional']
     const schemaTables = this.schema?.tables || []
 
     if (type === ReferenceType.TableRef) {
       const reference = node as TableReference
       const schemaTable = schemaTables.find(t => t.name === reference.table)
       if (schemaTable) {
-        const rows = schemaTable.columns.map(column => createRow(column))
-        return this.createQuickInfo(start, schemaTable.name, markdownTable([tableHeader, ...rows]))
+        const table = createMarkdownTable(schemaTable.columns)
+        return this.createQuickInfo(start, schemaTable.name, table)
       }
     }
 
@@ -200,7 +174,8 @@ export default class MySqlLanguageService implements TemplateLanguageService {
       if (!schemaColumn) {
         return
       }
-      return this.createQuickInfo(start, schemaColumn.name, markdownTable([tableHeader, createRow(schemaColumn)]))
+      const table = createMarkdownTable([schemaColumn])
+      return this.createQuickInfo(start, schemaColumn.name, table)
     }
   }
 
