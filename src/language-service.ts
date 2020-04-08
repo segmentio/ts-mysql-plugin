@@ -9,7 +9,6 @@ import {
   CompletionEntry,
   CompletionInfo
 } from 'typescript/lib/tsserverlibrary'
-import smartTruncate from 'smart-truncate'
 import markdownTable from 'markdown-table'
 import { Configuration } from './configuration'
 import Logger from './logger'
@@ -30,27 +29,13 @@ interface ResponseMessage {
   event: string
 }
 
-const MAX_LENGTH = 30
-
-function truncate(str: string): string {
-  return smartTruncate(str, MAX_LENGTH)
-}
-
 function padding(amount: number): string {
   return '&nbsp;'.repeat(amount)
 }
 
 function createRow(column: SchemaColumn): string[] {
   const pad = padding(5)
-  return [
-    truncate(column.name),
-    pad,
-    truncate(column.sqlType),
-    pad,
-    truncate(column.tsType),
-    pad,
-    String(column.optional)
-  ]
+  return [column.name, pad, column.sqlType, pad, column.tsType, pad, String(column.optional)]
 }
 
 function getKind(type: 'keyword' | 'table' | 'column'): ScriptElementKind {
