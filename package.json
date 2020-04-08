@@ -55,10 +55,8 @@
     }
   },
   "devDependencies": {
-    "@types/cross-spawn": "^6.0.1",
     "@types/jest": "^24.0.25",
     "@types/markdown-table": "^2.0.0",
-    "@types/mysql2": "types/mysql2",
     "@types/node": "^13.1.6",
     "@types/prettier": "^1.19.0",
     "@typescript-eslint/eslint-plugin": "^2.15.0",
@@ -77,19 +75,12 @@
     "ts-node": "^8.5.4"
   },
   "dependencies": {
-    "antlr4-c3": "^1.1.12",
-    "antlr4ts": "^0.5.0-alpha.3",
-    "antlr4ts-cli": "^0.5.0-alpha.3",
-    "cross-spawn": "^7.0.1",
-    "leven": "^3.1.0",
     "markdown-table": "^2.0.0",
-    "mysql2": "^2.1.0",
     "ts-mysql-analyzer": "^0.3.0",
     "ts-mysql-autocomplete": "^0.0.2",
     "ts-mysql-parser": "^0.1.2",
     "ts-simple-type": "^0.3.7",
     "typescript": "^3.7.4",
-    "typescript-template-language-service-decorator": "git://github.com/segmentio/typescript-template-language-service-decorator.git#master",
-    "vscode": "^1.1.36"
+    "typescript-template-language-service-decorator": "git://github.com/segmentio/typescript-template-language-service-decorator.git#master"
   }
 }
