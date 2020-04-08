@@ -1,4 +1,4 @@
-# ts-mysql-plugin (Beta)
+# ts-mysql-plugin
 
 ![Alt Text](https://github.com/segmentio/ts-mysql-plugin/workflows/CI/badge.svg)
 
