@@ -22,6 +22,7 @@ import { Configuration } from './configuration'
 import Logger from './logger'
 import { generateDocumentation } from './lib/documentation/generate'
 import { createMarkdownTable } from './lib/create-markdown-table'
+import { sendHostMessage } from './lib/send-host-message'
 import { mapSeverity } from './lib/map-severity'
 import { getKind } from './lib/get-kind'
 
@@ -70,21 +71,14 @@ export default class MySqlLanguageService implements TemplateLanguageService {
       })
   }
 
-  // For testing purposes, tell client the schema has loaded
   private onSchemaLoaded(): void {
-    const message = {
-      type: 'event',
-      event: 'schemaLoadingFinish'
+    if (process.env.NODE_ENV !== 'test') {
+      return
     }
-    this.sendResponse(message)
-  }
-
-  // For testing purposes, send response to client
-  private sendResponse(message: { type: string; event: string }): void {
-    const json = JSON.stringify(message)
-    const len = Buffer.byteLength(json, 'utf8')
-    const formattedMessage = `Content-Length: ${1 + len}\r\n\r\n${json}${this.host.newLine}`
-    this.host.write(formattedMessage)
+    sendHostMessage(this.host, {
+      event: 'schemaLoadingFinish',
+      type: 'event'
+    })
   }
 
   private createQuickInfo(start: number, text: string, docs: string): QuickInfo {

@@ -488,10 +488,12 @@ lru-cache@^5.1.1:
   dependencies:
     yallist "^3.0.2"
 
-markdown-table@^1.1.3:
-  version "1.1.3"
-  resolved "https://registry.yarnpkg.com/markdown-table/-/markdown-table-1.1.3.tgz#9fcb69bcfdb8717bfd0398c6ec2d93036ef8de60"
-  integrity sha512-1RUZVgQlpJSPWYbFSpmudq5nHY1doEIv89gBtF0s4gW1GF2XorxcA/70M5vq7rLv0a6mhOUccRsqkwhwLCIQ2Q==
+markdown-table@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/markdown-table/-/markdown-table-2.0.0.tgz#194a90ced26d31fe753d8b9434430214c011865b"
+  integrity sha512-Ezda85ToJUBhM6WGaG6veasyym+Tbs3cMAw/ZhOPqXiYsr0jgocBV3j3nx+4lk47plLlIqjwuTm/ywVI+zjJ/A==
+  dependencies:
+    repeat-string "^1.0.0"
 
 mime-db@1.43.0:
   version "1.43.0"
@@ -637,6 +639,11 @@ redeyed@~2.1.0:
   dependencies:
     esprima "~4.0.0"
 
+repeat-string@^1.0.0:
+  version "1.6.1"
+  resolved "https://registry.yarnpkg.com/repeat-string/-/repeat-string-1.6.1.tgz#8dcae470e1c88abc2d600fff4a776286da75e637"
+  integrity sha1-jcrkcOHIirwtYA//Sndihtp15jc=
+
 request@^2.88.0:
   version "2.88.0"
   resolved "https://registry.yarnpkg.com/request/-/request-2.88.0.tgz#9c2fca4f7d35b592efe57c7f0a55e81052124fef"
@@ -699,11 +706,6 @@ shebang-regex@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/shebang-regex/-/shebang-regex-3.0.0.tgz#ae16f1644d873ecad843b0307b143362d4c42172"
   integrity sha512-7++dFhtcx3353uBaq8DDR4NuxBetBzC7ZQOhmTQInHEd6bSrXdiEyzCvG07Z44UYdLShWUyXt5M/yhz8ekcb1A==
-
-smart-truncate@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/smart-truncate/-/smart-truncate-1.0.1.tgz#a2173d7abc724a5a30e1b63af88616228b14a475"
-  integrity sha512-f+kSLMDWKSCpYhwOZM+Da4d8klk5nY4gH57HOEOaaotsZEsTIm/51/9vKDNE26WjU72eBM1zEYdQl6uDwvZfLg==
 
 source-map-support@^0.5.0:
   version "0.5.16"
@@ -814,16 +816,15 @@ ts-mysql-parser@^0.2.0:
     typescript "^3.8.3"
 
 "ts-mysql-plugin@file:./..":
-  version "0.1.7"
+  version "1.0.0"
   dependencies:
     antlr4-c3 "^1.1.12"
     antlr4ts "^0.5.0-alpha.3"
     antlr4ts-cli "^0.5.0-alpha.3"
     cross-spawn "^7.0.1"
     leven "^3.1.0"
-    markdown-table "^1.1.3"
+    markdown-table "^2.0.0"
     mysql2 "^2.1.0"
-    smart-truncate "^1.0.1"
     ts-mysql-analyzer "^0.3.0"
     ts-mysql-autocomplete "^0.0.2"
     ts-mysql-parser "^0.1.2"
