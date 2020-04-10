@@ -42,11 +42,18 @@ Add the plugin to your compiler options in `tsconfig.json`. Note that `databaseU
 }
 ```
 
+You can also optionally configure the MySQL version for the plugin to use (defaults to 5.7.12) This will ensure that the MySQL parser correctly notifies you about syntax errors for your version.
+
+```json
+{
+  "mySQLVersion": "5.7.12"
+}
+```
+
 You can also optionally override the default tags ("SQL" and "sql") by adding a "tags" array to the config. For example, if you want the plugin to activate only on "Sql" tags:
 
 ```json
 {
-  "name": "ts-mysql-plugin",
   "tags": ["Sql"]
 }
 ```
@@ -74,13 +81,11 @@ cd ..
 yarn test
 ```
 
-## Publishing
+## Related
 
-We use [`np`](https://github.com/sindresorhus/np) to cut and publish new releases. Run the following:
-
-```shell
-yarn run pub
-```
+- [ts-mysql-parser](https://github.com/stevenmiller888/ts-mysql-parser) - A standalone, grammar-complete MySQL parser
+- [ts-mysql-analyzer](https://github.com/stevenmiller888/ts-mysql-analyzer) - A MySQL query analyzer
+- [ts-mysql-autocomplete](https://github.com/stevenmiller888/ts-mysql-autocomplete) - An autocomplete engine for MySQL queries
 
 ## License
 
