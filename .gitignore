@@ -1,6 +1,5 @@
 node_modules
 dist
 *.log
-*.txt
 *.DS_STORE
 *.tsbuildinfo
