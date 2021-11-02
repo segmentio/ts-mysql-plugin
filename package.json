@@ -81,6 +81,6 @@
     "ts-mysql-parser": "^0.1.2",
     "ts-simple-type": "^0.3.7",
     "typescript": "^3.7.4",
-    "typescript-template-language-service-decorator": "git://github.com/segmentio/typescript-template-language-service-decorator.git#master"
+    "typescript-template-language-service-decorator": "ssh://git@github.com/segmentio/typescript-template-language-service-decorator.git#master"
   }
 }
