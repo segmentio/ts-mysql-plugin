@@ -5608,9 +5608,9 @@ type-fest@^0.8.1:
   resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-0.8.1.tgz#09e249ebde851d3b1e48d27c105444667f17b83d"
   integrity sha512-4dbzIzqvjtgiM5rw1k5rEHtBANKmdudhGyBEajN01fEyhaAIhsoKNy6y7+IN93IfpFtwY9iqi7kD+xwKhQsNJA==
 
-"typescript-template-language-service-decorator@https://github.com/segmentio/typescript-template-language-service-decorator.git#master":
+"typescript-template-language-service-decorator@github://segmentio/typescript-template-language-service-decorator":
   version "2.2.0"
-  resolved "https://github.com/segmentio/typescript-template-language-service-decorator.git#2a6c095038e0eae73acaa0f8a48b3f50a31c02f3"
+  resolved "https://codeload.github.com/segmentio/typescript-template-language-service-decorator/tar.gz/2a6c095038e0eae73acaa0f8a48b3f50a31c02f3"
 
 typescript@^3.7.4, typescript@^3.8.3:
   version "3.8.3"
