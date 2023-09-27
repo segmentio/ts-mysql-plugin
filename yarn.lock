@@ -2147,9 +2147,9 @@ get-caller-file@^2.0.1:
   integrity sha512-DyFP3BM/3YHTQOCUL/w0OZHR0lpKeGrxotcHWcqNEdnltqFwXVfhEBQ94eIo34AfQpo0rGki4cyIiftY06h2Fg==
 
 get-func-name@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/get-func-name/-/get-func-name-2.0.0.tgz#ead774abee72e20409433a066366023dd6887a41"
-  integrity sha1-6td0q+5y4gQJQzoGY2YCPdaIekE=
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/get-func-name/-/get-func-name-2.0.2.tgz#0d7cf20cd13fda808669ffa88f4ffc7a3943fc41"
+  integrity sha512-8vXOvuE167CtIc3OyItco7N/dpRtBbYOsPsXCz7X/PMnlGjYjSGuZJgM1Y7mmew7BKf9BqvLX2tnOVy1BBUsxQ==
 
 get-own-enumerable-property-symbols@^3.0.0:
   version "3.0.2"
@@ -5610,7 +5610,8 @@ type-fest@^0.8.1:
 
 "typescript-template-language-service-decorator@git+ssh://git@github.com/segmentio/typescript-template-language-service-decorator":
   version "2.2.0"
-  resolved "git+ssh://git@github.com/segmentio/typescript-template-language-service-decorator#2a6c095038e0eae73acaa0f8a48b3f50a31c02f3"
+  uid ffb2bbb7fdef9a6d3e2ef7199d239f92e40ce6b9
+  resolved "git+ssh://git@github.com/segmentio/typescript-template-language-service-decorator#ffb2bbb7fdef9a6d3e2ef7199d239f92e40ce6b9"
 
 typescript@^3.7.4, typescript@^3.8.3:
   version "3.8.3"
