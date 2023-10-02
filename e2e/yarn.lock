@@ -61,11 +61,11 @@ commander@^3.0.2:
   integrity sha512-Gar0ASD4BDyKC4hl4DwHqDrmvjoxWKZigVnAbn5H1owvm4CxCPdb0HQDehwNYMJpla5+M2tPmPARzhtYuwpHow==
 
 debug@^4.1.1:
-  version "4.1.1"
-  resolved "https://registry.yarnpkg.com/debug/-/debug-4.1.1.tgz#3b72260255109c6b589cee050f1d516139664791"
-  integrity sha512-pYAIzeRo8J6KPEaJ0VWOh5Pzkbw/RetuzehGM7QRRX5he4fPHx2rdKMB256ehJCkX+XRQm16eZLqLNS8RSZXZw==
+  version "4.3.4"
+  resolved "https://registry.yarnpkg.com/debug/-/debug-4.3.4.tgz#1319f6579357f2338d3337d2cdd4914bb5dcc865"
+  integrity sha512-PRWFHuSU3eDtQJPvnNY7Jcket1j0t5OuOsFzPPzsekD52Zl8qUfFIPEiswXqIvHWGVHOgX+7G/vCNNhehwxfkQ==
   dependencies:
-    ms "^2.1.1"
+    ms "2.1.2"
 
 decorator-cache-getter@^1.0.0:
   version "1.0.0"
@@ -148,7 +148,7 @@ markdown-table@^2.0.0:
   dependencies:
     repeat-string "^1.0.0"
 
-ms@^2.1.1:
+ms@2.1.2:
   version "2.1.2"
   resolved "https://registry.yarnpkg.com/ms/-/ms-2.1.2.tgz#d09d1f357b443f493382a8eb3ccd183872ae6009"
   integrity sha512-sGkPx+VjMtmA6MX27oA4FBFELFCZZ4S4XqeGOXCv68tT+jb3vk/RyaKWP0PTKyWtmLSM0b+adUTEvbs1PEaH2w==
@@ -276,7 +276,7 @@ ts-mysql-parser@^0.2.0:
     ts-mysql-parser "^0.1.2"
     ts-simple-type "^0.3.7"
     typescript "^3.7.4"
-    typescript-template-language-service-decorator "github://segmentio/typescript-template-language-service-decorator"
+    typescript-template-language-service-decorator "git+ssh://git@github.com/segmentio/typescript-template-language-service-decorator"
 
 ts-mysql-schema@^0.0.3:
   version "0.0.3"
@@ -300,9 +300,10 @@ ts-simple-type@^0.3.7:
   resolved "https://registry.yarnpkg.com/ts-simple-type/-/ts-simple-type-0.3.7.tgz#1e77222c3d90d7093f80a954e74c725fd99c911c"
   integrity sha512-bDXWURwpDpe1mA5E9eldmI0Mpt9zGprhtN/ZTLOJjsAMyeMy1UT7WvGRQghYewIYBYxDZurChhe4DrsPbcCVrA==
 
-"typescript-template-language-service-decorator@github://segmentio/typescript-template-language-service-decorator":
+"typescript-template-language-service-decorator@git+ssh://git@github.com/segmentio/typescript-template-language-service-decorator":
   version "2.2.0"
-  resolved "https://codeload.github.com/segmentio/typescript-template-language-service-decorator/tar.gz/2a6c095038e0eae73acaa0f8a48b3f50a31c02f3"
+  uid ffb2bbb7fdef9a6d3e2ef7199d239f92e40ce6b9
+  resolved "git+ssh://git@github.com/segmentio/typescript-template-language-service-decorator#ffb2bbb7fdef9a6d3e2ef7199d239f92e40ce6b9"
 
 typescript@^3.1.6, typescript@^3.7.4:
   version "3.7.4"
