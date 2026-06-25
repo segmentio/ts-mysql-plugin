@@ -7,22 +7,22 @@ env:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest-large
 
     strategy:
       matrix:
         node-version: [12]
 
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e  # v1
 
       - name: Install Node.js
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@f1f314fca9dfce2769ece7d933488f076716723e  # v1
         with:
           node-version: ${{ matrix.node-version }}
 
       - name: Cache Node.js dependencies
-        uses: actions/cache@v1
+        uses: actions/cache@f5ce41475b483ad7581884324a6eca9f48f8dcc7  # v1
         with:
           path: node_modules
           key: node${{ matrix.node-version }}-${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}
